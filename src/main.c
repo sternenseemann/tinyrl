@@ -97,7 +97,35 @@ void move(int player[], uint16_t key, int monsterc, int monsters[][2])
 	debug("player[1]: %d",player[1]);*/
 }
 
+void move_monsters(int player[2], int monsterc, int monsters[][2])
+{
+	for(int i = 0; i < monsterc; i++)
+	{
+		int xdist = monsters[i][0] - player[0]; // x distance
+		int ydist = monsters[i][1] - player[1]; // y distance
 
+		if(xdist == 0 && ydist == 0)
+		{
+			//lolnope
+		}
+		else if(ydist > 0 && ydist >= xdist)
+		{
+			monsters[i][1] = monsters[i][1] - 1;
+		}
+		else if(ydist < 0 && ydist < xdist)
+		{
+			monsters[i][1] = monsters[i][1] + 1;
+		}
+		else if(xdist > 0 && xdist >= ydist)
+		{
+			monsters[i][0] = monsters[i][0] - 1;
+		}
+		else
+		{
+			monsters[i][0] = monsters[i][0] + 1;
+		}
+	}
+}
 int main(int argc, char *argv[])
 {
 	int player[2] = { 0, 0 }; // { x-position of the @, y-position of the @ }
@@ -151,6 +179,8 @@ int main(int argc, char *argv[])
 			printf("\\o/ You escaped! \\o/\n");
 			exit(0);
 		}	
+
+		move_monsters(player, monsterc, monsters);
 	}
 
 	return 0;
