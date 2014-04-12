@@ -48,8 +48,8 @@ int test_for_monsters(int x, int y, int monsterc, int monsters[][2]) // returns 
 void fight(int player[3], int monsteri, int monsters[][2])
 {
 	player[2] = player[2] - 1;
-	monsters[monsteri][0] = -1;
-	monsters[monsteri][1] = -1;	
+	monsters[monsteri][0] = -1; // put the monster into the "graveyard"
+	monsters[monsteri][1] = -1; // monsters at (-1,-1) are simply ignored 8)
 }
 
 void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters[][2])
