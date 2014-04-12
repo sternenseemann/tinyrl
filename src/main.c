@@ -6,13 +6,16 @@
 
 #define COUNT_OF( arr) (sizeof(arr)/sizeof(0[arr]))
 
-void draw(int player[2], int level_exit[2], int monsterc, int monsters[][2])
+void draw(int player[3], int level_exit[2], int monsterc, int monsters[][2])
 {
 	tb_clear();
 	
 	for(int i = 0; i < monsterc; i++)
 	{
-		tb_change_cell(monsters[i][0],monsters[i][1], 'm', TB_RED, TB_DEFAULT);
+		if(monsters[i][0] != - 1 && monsters[i][1] != - 1) // the monster hasn't been put on the "graveyard" in (-1,-1)
+		{
+			tb_change_cell(monsters[i][0],monsters[i][1], 'm', TB_RED, TB_DEFAULT);
+		}
 	}
 	
 	tb_change_cell(player[0], player[1], '@', TB_MAGENTA, TB_DEFAULT);
@@ -31,30 +34,38 @@ int test_position(int x, int y)
 	}
 }
 
-int test_for_monsters(int x, int y, int monsterc, int monsters[][2])
+int test_for_monsters(int x, int y, int monsterc, int monsters[][2]) // returns - 1 if false; otherwise the index of the monster in monsters
 {
 	for(int i = 0; i < monsterc; i++) // walk trough the monsters and check if one is at the specific point
 	{
 		if(monsters[i][0] == x && monsters[i][1] == y){
-			return 1;
+			return i;
 		}
 	}
-	return 0;
+	return - 1;
 }
 
-void handle_move(int new_x, int new_y, int player[2], int monsterc, int monsters[][2])
+void fight(int player[3], int monsteri, int monsters[][2])
+{
+	player[2] = player[2] - 1;
+	monsters[monsteri][0] = -1;
+	monsters[monsteri][1] = -1;	
+}
+
+void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters[][2])
 {
 	int monster_there = test_for_monsters(new_x, new_y, monsterc, monsters);
 
-	if(test_position(new_x, new_y) == 1 && monster_there == 0){ // position is in the terminal and there's no monster -> move there
+	if(test_position(new_x, new_y) == 1 && monster_there == - 1){ // position is in the terminal and there's no monster -> move there
 		player[0] = new_x;
 		player[1] = new_y;
 	}
-	else if(test_position(new_x, new_y) == 1 && monster_there == 1) // there's a monster -> fight
+	else if(test_position(new_x, new_y) == 1 && monster_there != - 1) // there's a monster -> fight
 	{
-		// fight 
+		fight(player, monster_there, monsters); 
 	}
 }
+
 void move(int player[], uint16_t key, int monsterc, int monsters[][2])
 {
 	int new_x, new_y;
@@ -97,39 +108,45 @@ void move(int player[], uint16_t key, int monsterc, int monsters[][2])
 	debug("player[1]: %d",player[1]);*/
 }
 
-void move_monsters(int player[2], int monsterc, int monsters[][2])
+void move_monsters(int player[3], int monsterc, int monsters[][2])
 {
 	for(int i = 0; i < monsterc; i++)
 	{
-		int xdist = monsters[i][0] - player[0]; // x distance
-		int ydist = monsters[i][1] - player[1]; // y distance
+		if(monsters[i][0] != -1 && monsters[i][1] != -1){ // is the monster on the "graveyard" at (-1,-1)
+			int xdist = monsters[i][0] - player[0]; // x distance
+			int ydist = monsters[i][1] - player[1]; // y distance
 
-		if(xdist == 0 && ydist == 0)
-		{
-			//lolnope
-		}
-		else if(ydist > 0 && ydist >= xdist)
-		{
-			monsters[i][1] = monsters[i][1] - 1;
-		}
-		else if(ydist < 0 && ydist < xdist)
-		{
-			monsters[i][1] = monsters[i][1] + 1;
-		}
-		else if(xdist > 0 && xdist >= ydist)
-		{
-			monsters[i][0] = monsters[i][0] - 1;
-		}
-		else
-		{
-			monsters[i][0] = monsters[i][0] + 1;
+			if(xdist == 0 && ydist == 0)
+			{
+				// nothing to do here. You'll die little monster :(
+			}
+			else if(ydist > 0 && ydist >= xdist)
+			{
+				monsters[i][1] = monsters[i][1] - 1;
+			}
+			else if(ydist < 0 && ydist < xdist)
+			{
+				monsters[i][1] = monsters[i][1] + 1;
+			}
+			else if(xdist > 0 && xdist >= ydist)
+			{
+				monsters[i][0] = monsters[i][0] - 1;
+			}
+			else
+			{
+				monsters[i][0] = monsters[i][0] + 1;
+			}
+	
+			if(monsters[i][0] == player[0] && monsters[i][1] == player[1])
+			{
+				fight(player, i, monsters);
+			}
 		}
 	}
 }
 int main(int argc, char *argv[])
 {
-	int player[2] = { 0, 0 }; // { x-position of the @, y-position of the @ }
-	int player_lives = 5;
+	int player[3] = { 0, 0, 5 }; // { x-position of the @, y-position of the @, lives of @ }
 	int level_exit[2]; // { x-pos of exit, y-pos of exit }
 	struct tb_event event; // here will our events be stored
 
@@ -171,7 +188,7 @@ int main(int argc, char *argv[])
 			default:
 				break;
 		}
-
+		
 		/* Did we get to the exit? */
 		if(player[0] == level_exit[0] && player[1] == level_exit[1])
 		{
@@ -181,6 +198,13 @@ int main(int argc, char *argv[])
 		}	
 
 		move_monsters(player, monsterc, monsters);
+
+		/* are we dead? */
+		if(player[2] == 0){
+			tb_shutdown();
+			printf("/o\\ You are dead /o\\\n");
+			exit(0);
+		}
 	}
 
 	return 0;
