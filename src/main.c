@@ -33,7 +33,7 @@ int test_position(int x, int y)
 
 int test_for_monsters(int x, int y, int monsterc, int monsters[][2])
 {
-	for(int i = 0; i < monsterc; i++)
+	for(int i = 0; i < monsterc; i++) // walk trough the monsters and check if one is at the specific point
 	{
 		if(monsters[i][0] == x && monsters[i][1] == y){
 			return 1;
@@ -46,11 +46,11 @@ void handle_move(int new_x, int new_y, int player[2], int monsterc, int monsters
 {
 	int monster_there = test_for_monsters(new_x, new_y, monsterc, monsters);
 
-	if(test_position(new_x, new_y) == 1 && monster_there == 0){
+	if(test_position(new_x, new_y) == 1 && monster_there == 0){ // position is in the terminal and there's no monster -> move there
 		player[0] = new_x;
 		player[1] = new_y;
 	}
-	else if(monster_there == 1)
+	else if(test_position(new_x, new_y) == 1 && monster_there == 1) // there's a monster -> fight
 	{
 		// fight 
 	}
@@ -63,22 +63,30 @@ void move(int player[], uint16_t key, int monsterc, int monsters[][2])
 		case TB_KEY_ARROW_UP:
 			new_x = player[0];
 			new_y = player[1] - 1;
+
 			handle_move(new_x, new_y, player, monsterc, monsters);
+			
 			break;
 		case TB_KEY_ARROW_DOWN:
 			new_x = player[0];
 			new_y = player[1] + 1;
+
 			handle_move(new_x, new_y, player, monsterc, monsters);	
+
 			break;
 		case TB_KEY_ARROW_LEFT:
 			new_x = player[0] - 1;
 			new_y = player[1];
+			
 			handle_move(new_x, new_y, player, monsterc, monsters);
+			
 			break;
 		case TB_KEY_ARROW_RIGHT:
 			new_x = player[0] + 1;
 			new_y = player[1];
+			
 			handle_move(new_x, new_y, player, monsterc, monsters);
+			
 			break;
 		default:
 			break;
