@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I"termbox src" -Werror
+CFLAGS=-I"termbox src" -Werror -Wall -std=c99
 TERMBOXFILES=termbox/termbox.c termbox/utf8.c
 
 all: src/main.c 
