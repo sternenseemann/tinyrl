@@ -10,6 +10,7 @@ void draw(int player[3], int level_exit[2], int monsterc, int monsters[][2])
 {
 	tb_clear();
 	
+	tb_change_cell(tb_width() - 1,0,player[2] + 0x30,TB_WHITE,TB_DEFAULT);	
 	for(int i = 0; i < monsterc; i++)
 	{
 		if(monsters[i][0] != - 1 && monsters[i][1] != - 1) // the monster hasn't been put on the "graveyard" in (-1,-1)
