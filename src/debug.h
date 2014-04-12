@@ -1,3 +1,6 @@
+/* Debug macros by Zed Shaw
+<http://c.learncodethehardway.org/book/ex20.html>
+*/
 #ifndef __dbg_h__
 #define __dbg_h__
 
