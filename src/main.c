@@ -121,23 +121,25 @@ void move_monsters(int player[3], int monsterc, int monsters[][2])
 		int xdist = monsters[i][0] - player[0]; // x distance
 		int ydist = monsters[i][1] - player[1]; // y distance
 
-		if(xdist == 0 && ydist == 0)
+		// is there no way to go?
+		int nulldist = (ydist == 0) && (xdist == 0); 
+		/*if(xdist == 0 && ydist == 0)
 		{
 			// nothing to do here. You'll die little monster :(	
-		}
-		else if(ydist > 0 && ydist >= xdist)
+		}*/ 
+		if(ydist > 0 && ydist >= xdist && !nulldist)
 		{
 			monsters[i][1] = monsters[i][1] - 1;
 		}
-		else if(ydist < 0 && ydist < xdist)
+		else if(ydist < 0 && ydist < xdist && !nulldist)
 		{
 			monsters[i][1] = monsters[i][1] + 1;
 		}
-		else if(xdist > 0 && xdist >= ydist)
+		else if(xdist > 0 && xdist >= ydist && !nulldist)
 		{
 			monsters[i][0] = monsters[i][0] - 1;
 		}
-		else
+		else if(xdist < 0 && xdist < ydist && !nulldist)
 		{
 			monsters[i][0] = monsters[i][0] + 1;
 		}
