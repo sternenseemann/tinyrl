@@ -1,0 +1,14 @@
+22,23c22,23
+< 	tb_change_cell(player[0], player[1], '@', TB_MAGENTA, TB_DEFAULT);
+< 	tb_change_cell(level_exit[0], level_exit[1], '>',TB_WHITE,TB_DEFAULT);
+---
+> 	tb_change_cell(player[0], player[1], '#', TB_MAGENTA, TB_DEFAULT);
+> 	tb_change_cell(level_exit[0], level_exit[1], 'f',TB_WHITE,TB_DEFAULT);
+201c201
+< 			printf("\\o/ You escaped! \\o/\n");
+---
+> 			printf("\\o/ You found the cat! \\o/\n");
+210c210
+< 			printf("/o\\ You are dead /o\\\n");
+---
+> 			printf("/o\\ You got destroyed! /o\\\n");
