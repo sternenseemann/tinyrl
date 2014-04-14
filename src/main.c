@@ -164,6 +164,12 @@ int main(int argc, char *argv[])
 	level_exit[0] = rand() % tb_width();
 	level_exit[1] = rand() % tb_height();
 
+	// pick a random location for the player
+	do{
+		player[0] = rand() % tb_width();
+		player[1] = rand() % tb_height();
+	}while(player[0] != level_exit[0] && player[1] != level_exit[1]);
+
 	int monsterc = rand() % 10;
 	int monsters[monsterc][2];
 	
