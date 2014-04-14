@@ -13,14 +13,14 @@ void draw(int player[3], int level_exit[2], int monsterc, int monsters[][2])
 	tb_change_cell(tb_width() - 1,0,player[2] + 0x30,TB_WHITE,TB_DEFAULT);	
 	for(int i = 0; i < monsterc; i++)
 	{
-		if(monsters[i][0] != - 1 && monsters[i][1] != - 1) // the monster hasn't been put on the "graveyard" in (-1,-1)
-		{
+		// the monster hasn't been put on the "graveyard" in (-1,-1)
+		if(monsters[i][0] != - 1 && monsters[i][1] != - 1) 		{
 			tb_change_cell(monsters[i][0],monsters[i][1], 'm', TB_RED, TB_DEFAULT);
 		}
 	}
 	
 	tb_change_cell(player[0], player[1], '@', TB_MAGENTA, TB_DEFAULT);
-	tb_change_cell(level_exit[0], level_exit[1], '>',TB_WHITE,TB_DEFAULT);
+	tb_change_cell(level_exit[0], level_exit[1], 0x2588,TB_WHITE,TB_DEFAULT);
 
 	
 	tb_present();
