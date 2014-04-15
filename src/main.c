@@ -99,10 +99,11 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int leve
 	tb_present();
 }
 
-int test_position(int x, int y)
+int test_position(int x, int y, int map[map_dimensions[0]][map_dimensions[1]])
 {
-	// is the position in the terminal?
-	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height()){ 
+	extern int map_dimensions[2];
+	// is the position in the terminal? Is there no '#'?
+	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#'){ 
 		return 1;
 	}else{
 		return 0;
@@ -130,25 +131,29 @@ void fight(int player[3], int monsteri, int monsters[][2])
 	monsters[monsteri][1] = -1; // monsters at (-1,-1) are simply ignored 8)
 }
 
-void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters[][2])
+void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters[][2], int map[map_dimensions[0]][map_dimensions[1]])
 {
+	extern int map_dimensions[2];
+
 	int monster_there = test_for_monsters(new_x, new_y, monsterc, monsters);
 
 	// position is in the terminal and there's no monster -> move there
-	if(test_position(new_x, new_y) == 1 && monster_there == - 1)
+	if(test_position(new_x, new_y, map) == 1 && monster_there == - 1)
 	{ 
 		player[0] = new_x;
 		player[1] = new_y;
 	}
 	// there's a monster -> fight
-	else if(test_position(new_x, new_y) == 1 && monster_there != - 1) 
+	else if(test_position(new_x, new_y, map) == 1 && monster_there != - 1) 
 	{
 		fight(player, monster_there, monsters); 
 	}
 }
 
-void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][2])
+void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][2], int map[map_dimensions[0]][map_dimensions[1]])
 {
+	extern int map_dimensions[2];
+
 	int new_x, new_y;
 	
 	if(key == TB_KEY_ARROW_UP || ch == 'k')
@@ -156,32 +161,32 @@ void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][
 		new_x = player[0];
 		new_y = player[1] - 1;
 
-		handle_move(new_x, new_y, player, monsterc, monsters);
+		handle_move(new_x, new_y, player, monsterc, monsters, map);
 	}
 	else if(key == TB_KEY_ARROW_DOWN || ch == 'j')
 	{
 		new_x = player[0];
 		new_y = player[1] + 1;
 
-		handle_move(new_x, new_y, player, monsterc, monsters);	
+		handle_move(new_x, new_y, player, monsterc, monsters, map);	
 	}
 	else if(key == TB_KEY_ARROW_LEFT || ch == 'h')
 	{
 		new_x = player[0] - 1;
 		new_y = player[1];
 		
-		handle_move(new_x, new_y, player, monsterc, monsters);		
+		handle_move(new_x, new_y, player, monsterc, monsters, map);		
 	}
 	else if(key == TB_KEY_ARROW_RIGHT || ch == 'l')
 	{
 		new_x = player[0] + 1;
 		new_y = player[1];
 		
-		handle_move(new_x, new_y, player, monsterc, monsters);
+		handle_move(new_x, new_y, player, monsterc, monsters, map);
 	}
 }
 
-void move_monsters(int player[3], int monsterc, int monsters[][2])
+void move_monsters(int player[3], int monsterc, int monsters[][2], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	for(int i = 0; i < monsterc; i++)
 	{
@@ -197,21 +202,39 @@ void move_monsters(int player[3], int monsterc, int monsters[][2])
 		// is there no way to go?
 		int nulldist = (ydist == 0) && (xdist == 0); 
 		
+		int newx, newy;
+
 		if(ydist > 0 && ydist >= xdist && !nulldist)
 		{
-			monsters[i][1] = monsters[i][1] - 1;
+			newy = monsters[i][1] - 1;
+			if(test_position(monsters[i][0], newy, map))
+			{
+				monsters[i][1] = newy; 
+			}
 		}
 		else if(ydist < 0 && ydist < xdist && !nulldist)
 		{
-			monsters[i][1] = monsters[i][1] + 1;
+			newy = monsters[i][1] + 1;
+			if(test_position(monsters[i][0], newy, map))
+			{
+				monsters[i][1] = newy; 
+			}
 		}
 		else if(xdist > 0 && xdist >= ydist && !nulldist)
 		{
-			monsters[i][0] = monsters[i][0] - 1;
+			newx = monsters[i][0] - 1;
+			if(test_position(newx, monsters[i][1], map))
+			{
+				monsters[i][0] = newx;
+			}
 		}
 		else if(xdist < 0 && xdist < ydist && !nulldist)
 		{
-			monsters[i][0] = monsters[i][0] + 1;
+			newx = monsters[i][0] + 1;
+			if(test_position(newx, monsters[i][1], map))
+			{
+				monsters[i][0] = newx;
+			}
 		}
 
 		if(monsters[i][0] == player[0] && monsters[i][1] == player[1])
@@ -271,7 +294,7 @@ int main(int argc, char *argv[])
 						exit(0);
 						break; // yolo
 					default: // let the move-function check if we have to move or not
-						move(player,event.key, event.ch, monsterc, monsters);
+						move(player,event.key, event.ch, monsterc, monsters, map);
 						break;
 				}
 				if(event.ch == 'q')
@@ -290,7 +313,7 @@ int main(int argc, char *argv[])
 			break;	
 		}	
 
-		move_monsters(player, monsterc, monsters);
+		move_monsters(player, monsterc, monsters, map);
 
 		/* are we dead? */
 		if(player[2] == 0){
