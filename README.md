@@ -1,21 +1,27 @@
-tinyrl
+tinyRL
 ======
 
 ![](https://i.imgur.com/mn1IXxQ.png)
 
-tiny rogue-like written in C. Its also a try to rewrite robot-rogue in C because my Object structure is totally broken.
+tinyRL is a tiny rogue-like written in C. 
 
 ## Playing
 You will find yourself converted into a magenta `@` in a black enviroment surrounded by evil red `m`.  
 But there's hope! Run to the `>` and escape! But watch out, the `m` will chase you and five of them together have the power to kill you.
 
 ## Building
-`make` it.
+Should compile on most unixes, use a terminal emulator with UTF-8 support.
+
+	git clone https://github.com/lukasepple/tinyrl.git
+	cd tinyrl
+	make
+	./bin/tinyrl # have fun!
+
 
 ## robot rogue patch
-As mentioned above this roguelike is a attempt to rewrite [robot-rogue](https://github.com/lukasepple/robot-rogue).
+This roguelike is a attempt to rewrite [robot-rogue](https://github.com/lukasepple/robot-rogue).
 
-To turn tinyrl into robot-rogue I created the patch `robot-rogue.patch`. Apply it by `patch < robot-rogue.patch` and then entering `src/main.c`.
+To turn tinyRL into robot-rogue I created the patch `robot-rogue.patch`. Apply it by `patch < robot-rogue.patch` and then entering `src/main.c`.
 
 Now run `make` and execute `./bin/tinyrl`. The story is different:
 
