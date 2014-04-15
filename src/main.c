@@ -101,6 +101,7 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int leve
 
 int test_position(int x, int y, int map[map_dimensions[0]][map_dimensions[1]])
 {
+	// TODO: make sure that it returns 1 if the exit is at (x, y)
 	extern int map_dimensions[2];
 	// is the position in the terminal? Is there no '#'?
 	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#'){ 
