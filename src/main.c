@@ -14,7 +14,8 @@ void draw(int player[3], int level_exit[2], int monsterc, int monsters[][2])
 	for(int i = 0; i < monsterc; i++)
 	{
 		// the monster hasn't been put on the "graveyard" in (-1,-1)
-		if(monsters[i][0] != - 1 && monsters[i][1] != - 1) 		{
+		if(monsters[i][0] != - 1 && monsters[i][1] != - 1) 
+		{
 			tb_change_cell(monsters[i][0],monsters[i][1], 'm', TB_RED, TB_DEFAULT);
 		}
 	}
@@ -28,16 +29,19 @@ void draw(int player[3], int level_exit[2], int monsterc, int monsters[][2])
 
 int test_position(int x, int y)
 {
-	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height()){ // is the position in the terminal?
+	// is the position in the terminal?
+	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height()){ 
 		return 1;
 	}else{
 		return 0;
 	}
 }
 
-int test_for_monsters(int x, int y, int monsterc, int monsters[][2]) // returns - 1 if false; otherwise the index of the monster in monsters
+// returns - 1 if false; otherwise the index of the monster in monsters
+int test_for_monsters(int x, int y, int monsterc, int monsters[][2]) 
 {
-	for(int i = 0; i < monsterc; i++) // walk trough the monsters and check if one is at the specific point
+	// walk trough the monsters and check if one is at the specific point
+	for(int i = 0; i < monsterc; i++)
 	{
 		if(monsters[i][0] == x && monsters[i][1] == y)
 		{
@@ -118,15 +122,13 @@ void move_monsters(int player[3], int monsterc, int monsters[][2])
 		{
 		     continue;
 		}
-		int xdist = monsters[i][0] - player[0]; // x distance
-		int ydist = monsters[i][1] - player[1]; // y distance
+		// calculate x-distance and y-distance
+		int xdist = monsters[i][0] - player[0];
+		int ydist = monsters[i][1] - player[1];
 
 		// is there no way to go?
 		int nulldist = (ydist == 0) && (xdist == 0); 
-		/*if(xdist == 0 && ydist == 0)
-		{
-			// nothing to do here. You'll die little monster :(	
-		}*/ 
+		
 		if(ydist > 0 && ydist >= xdist && !nulldist)
 		{
 			monsters[i][1] = monsters[i][1] - 1;
@@ -159,10 +161,11 @@ int main(int argc, char *argv[])
 
 	tb_init();
 
-	/* pick a random location for the exit*/
+	// pick a random location for the exit
 	srand(time(NULL));	
 	level_exit[0] = rand() % tb_width();
 	level_exit[1] = rand() % tb_height();
+
 
 	int monsterc = rand() % 10;
 	int monsters[monsterc][2];
