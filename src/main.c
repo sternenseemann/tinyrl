@@ -33,7 +33,8 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	house_start[1] = rand() % ( map_dimensions[1] - 6 );	
 	
 	int housex = house_start[0];
-	int housey;
+	int housey = house_start[1];
+
 	for(housey = house_start[1]; housey < (house_start[1] + 5); housey++)
 	{
 		// top
@@ -45,7 +46,7 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	{
 		// top
 		map[housex][housey - 5] = '#';
-		// bottom
+		// bottom, the if is for the empty cell to get in
 		if(housex != house_start[0] + 2){
 			map[housex][housey] = '#';
 		}
@@ -92,7 +93,7 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int leve
 		}
 	}
 	
-	tb_change_cell(player[0], player[1], '@', TB_MAGENTA, TB_DEFAULT);
+	tb_change_cell(player[0], player[1], '@', TB_GREEN, TB_DEFAULT);
 	tb_change_cell(level_exit[0], level_exit[1], 0x2588,TB_WHITE,TB_DEFAULT);
 
 	
