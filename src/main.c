@@ -15,12 +15,52 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	//
 	// fields are accesed like map[x][y] (which could be '.' or '#' etc.)
 	
+	// generate a house
+	// looks like that:
+	// ┌-- The coordinates for this brick are randomly chosen as a base for generation.
+	// v
+	// #####
+	// #   #
+	// #   #
+	// #   #
+	// #   #
+	// ## ##
+	//
+	// the start brick needs min. 5 chars distance to the terminal border (bottom and right one)
+	// indexes start with 0 -> we need to subtract 6
+	int house_start[2];
+	house_start[0] = rand() % ( map_dimensions[0] - 6 ); 
+	house_start[1] = rand() % ( map_dimensions[1] - 6 );	
+	
+	int housex = house_start[0];
+	int housey;
+	for(housey = house_start[1]; housey < (house_start[1] + 5); housey++)
+	{
+		// top
+		map[housex][housey] = '#';
+		// bottom
+		map[housex + 4][housey] = '#';
+	}
+	for(housex = house_start[0]; housex < (house_start[0] + 5); housex++)
+	{
+		// top
+		map[housex][housey - 5] = '#';
+		// bottom
+		if(housex != house_start[0] + 2){
+			map[housex][housey] = '#';
+		}
+	}
+
+	// fill the rest with ground ('.')	
 	int mapx;
 	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
 	{
 		int mapy;
 		for(mapy = 0; mapy < map_dimensions[1]; mapy++){
-			map[mapx][mapy] = '.';
+			if(map[mapx][mapy] != '#')
+			{
+				map[mapx][mapy] = '.';
+			}
 		}
 
 	}
