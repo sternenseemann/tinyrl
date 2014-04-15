@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define COUNT_OF( arr) (sizeof(arr)/sizeof(0[arr]))
-
 void draw(int player[3], int level_exit[2], int monsterc, int monsters[][2])
 {
 	tb_clear();
@@ -79,34 +77,28 @@ void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][
 {
 	int new_x, new_y;
 	
-	// UTF-8 letter codes for the VIM keys
-	uint32_t  k = 0x6B;
-	uint32_t j = 0x6A;
-	uint32_t h = 0x68;
-	uint32_t l = 0x6C;
-
-	if(key == TB_KEY_ARROW_UP || ch == k)
+	if(key == TB_KEY_ARROW_UP || ch == 'k')
 	{
 		new_x = player[0];
 		new_y = player[1] - 1;
 
 		handle_move(new_x, new_y, player, monsterc, monsters);
 	}
-	else if(key == TB_KEY_ARROW_DOWN || ch == j)
+	else if(key == TB_KEY_ARROW_DOWN || ch == 'j')
 	{
 		new_x = player[0];
 		new_y = player[1] + 1;
 
 		handle_move(new_x, new_y, player, monsterc, monsters);	
 	}
-	else if(key == TB_KEY_ARROW_LEFT || ch == h)
+	else if(key == TB_KEY_ARROW_LEFT || ch == 'h')
 	{
 		new_x = player[0] - 1;
 		new_y = player[1];
 		
 		handle_move(new_x, new_y, player, monsterc, monsters);		
 	}
-	else if(key == TB_KEY_ARROW_RIGHT || ch == l)
+	else if(key == TB_KEY_ARROW_RIGHT || ch == 'l')
 	{
 		new_x = player[0] + 1;
 		new_y = player[1];
