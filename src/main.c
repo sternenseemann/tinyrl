@@ -4,9 +4,43 @@
 #include <stdlib.h>
 #include <time.h>
 
-void draw(int player[3], int level_exit[2], int monsterc, int monsters[][2])
+int map_dimensions[2];
+
+void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 {
+	extern int map_dimensions[2];
+	// generate map
+	// map is a array of arrays:
+	// map[map_dimensions[0]][map_dimensions[1]]
+	//
+	// fields are accesed like map[x][y] (which could be '.' or '#' etc.)
+	
+	int mapx;
+	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
+	{
+		int mapy;
+		for(mapy = 0; mapy < map_dimensions[1]; mapy++){
+			map[mapx][mapy] = '.';
+		}
+
+	}
+}
+
+void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int level_exit[2], int monsterc, int monsters[][2])
+{
+	extern int map_dimensions[2];
+
 	tb_clear();
+	
+	int mapx;
+	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
+	{
+		int mapy;
+		for(mapy = 0; mapy < map_dimensions[1]; mapy++){
+			tb_change_cell(mapx,mapy,map[mapx][mapy],TB_WHITE,TB_DEFAULT);
+		}
+
+	}
 	
 	tb_change_cell(tb_width() - 1,0,player[2] + 0x30,TB_WHITE,TB_DEFAULT);	
 	for(int i = 0; i < monsterc; i++)
@@ -149,6 +183,8 @@ void move_monsters(int player[3], int monsterc, int monsters[][2])
 
 int main(int argc, char *argv[])
 {
+	extern int map_dimensions[2];
+
 	int player[3] = { 0, 0, 5 }; // { x-position of the @, y-position of the @, lives of @ }
 	int level_exit[2]; // { x-pos of exit, y-pos of exit }
 	struct tb_event event; // here will our events be stored
@@ -160,6 +196,16 @@ int main(int argc, char *argv[])
 	level_exit[0] = rand() % tb_width();
 	level_exit[1] = rand() % tb_height();
 
+	// init the size of the map. The map does NOT resize
+	map_dimensions[0] = tb_width();
+	map_dimensions[1] = tb_height();
+	
+	// create an array of the size
+	// see generate_map for a further explanition
+	// of the data structure
+	int map[map_dimensions[0]][map_dimensions[1]];
+	
+	generate_map(map);
 
 	int monsterc = rand() % 10;
 	int monsters[monsterc][2];
@@ -172,7 +218,7 @@ int main(int argc, char *argv[])
 
 	while(1)
 	{
-		draw(player, level_exit, monsterc, monsters);
+		draw(map, player, level_exit, monsterc, monsters);
 		tb_poll_event(&event); // wait for an event
 		//debug("got event");
 		switch(event.type)
