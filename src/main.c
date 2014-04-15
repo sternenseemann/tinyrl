@@ -62,55 +62,57 @@ void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters
 {
 	int monster_there = test_for_monsters(new_x, new_y, monsterc, monsters);
 
+	// position is in the terminal and there's no monster -> move there
 	if(test_position(new_x, new_y) == 1 && monster_there == - 1)
-	{ // position is in the terminal and there's no monster -> move there
+	{ 
 		player[0] = new_x;
 		player[1] = new_y;
 	}
-	else if(test_position(new_x, new_y) == 1 && monster_there != - 1) // there's a monster -> fight
+	// there's a monster -> fight
+	else if(test_position(new_x, new_y) == 1 && monster_there != - 1) 
 	{
 		fight(player, monster_there, monsters); 
 	}
 }
 
-void move(int player[], uint16_t key, int monsterc, int monsters[][2])
+void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][2])
 {
 	int new_x, new_y;
-	switch(key)
+	
+	// UTF-8 letter codes for the VIM keys
+	uint32_t  k = 0x6B;
+	uint32_t j = 0x6A;
+	uint32_t h = 0x68;
+	uint32_t l = 0x6C;
+
+	if(key == TB_KEY_ARROW_UP || ch == k)
 	{
-		case TB_KEY_ARROW_UP:
-			new_x = player[0];
-			new_y = player[1] - 1;
+		new_x = player[0];
+		new_y = player[1] - 1;
 
-			handle_move(new_x, new_y, player, monsterc, monsters);
-			
-			break;
-		case TB_KEY_ARROW_DOWN:
-			new_x = player[0];
-			new_y = player[1] + 1;
-
-			handle_move(new_x, new_y, player, monsterc, monsters);	
-
-			break;
-		case TB_KEY_ARROW_LEFT:
-			new_x = player[0] - 1;
-			new_y = player[1];
-			
-			handle_move(new_x, new_y, player, monsterc, monsters);
-			
-			break;
-		case TB_KEY_ARROW_RIGHT:
-			new_x = player[0] + 1;
-			new_y = player[1];
-			
-			handle_move(new_x, new_y, player, monsterc, monsters);
-			
-			break;
+		handle_move(new_x, new_y, player, monsterc, monsters);
 	}
-	/*debug("new_x: %d", new_x);
-	debug("new_y: %d", new_y);
-	debug("player[0]: %d",player[0]);
-	debug("player[1]: %d",player[1]);*/
+	else if(key == TB_KEY_ARROW_DOWN || ch == j)
+	{
+		new_x = player[0];
+		new_y = player[1] + 1;
+
+		handle_move(new_x, new_y, player, monsterc, monsters);	
+	}
+	else if(key == TB_KEY_ARROW_LEFT || ch == h)
+	{
+		new_x = player[0] - 1;
+		new_y = player[1];
+		
+		handle_move(new_x, new_y, player, monsterc, monsters);		
+	}
+	else if(key == TB_KEY_ARROW_RIGHT || ch == l)
+	{
+		new_x = player[0] + 1;
+		new_y = player[1];
+		
+		handle_move(new_x, new_y, player, monsterc, monsters);
+	}
 }
 
 void move_monsters(int player[3], int monsterc, int monsters[][2])
@@ -191,8 +193,13 @@ int main(int argc, char *argv[])
 						exit(0);
 						break; // yolo
 					default: // let the move-function check if we have to move or not
-						move(player,event.key, monsterc, monsters);
+						move(player,event.key, event.ch, monsterc, monsters);
 						break;
+				}
+				if(event.ch == 'q')
+				{
+					tb_shutdown();
+					exit(0);
 				}
 				break;
 		}
