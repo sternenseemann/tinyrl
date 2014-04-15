@@ -100,12 +100,12 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int leve
 	tb_present();
 }
 
-int test_position(int x, int y, int map[map_dimensions[0]][map_dimensions[1]])
+int test_position(int x, int y, int player[3], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	// TODO: make sure that it returns 1 if the exit is at (x, y)
 	extern int map_dimensions[2];
-	// is the position in the terminal? Is there no '#'?
-	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#'){ 
+	// is the position in the terminal? Is there no '#'? Is there no player (needed for the better fighting mechanism)
+	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#' && (player[0] != x || player[1] != y)){ 
 		return 1;
 	}else{
 		return 0;
@@ -140,13 +140,13 @@ void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters
 	int monster_there = test_for_monsters(new_x, new_y, monsterc, monsters);
 
 	// position is in the terminal and there's no monster -> move there
-	if(test_position(new_x, new_y, map) == 1 && monster_there == - 1)
+	if(test_position(new_x, new_y, player, map) == 1 && monster_there == - 1)
 	{ 
 		player[0] = new_x;
 		player[1] = new_y;
 	}
 	// there's a monster -> fight
-	else if(test_position(new_x, new_y, map) == 1 && monster_there != - 1) 
+	else if(test_position(new_x, new_y, player, map) == 1 && monster_there != - 1) 
 	{
 		fight(player, monster_there, monsters); 
 	}
@@ -209,7 +209,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][2], int map[map_d
 		if(ydist > 0 && ydist >= xdist && !nulldist)
 		{
 			newy = monsters[i][1] - 1;
-			if(test_position(monsters[i][0], newy, map))
+			if(test_position(monsters[i][0], newy, player, map))
 			{
 				monsters[i][1] = newy; 
 			}
@@ -217,7 +217,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][2], int map[map_d
 		else if(ydist < 0 && ydist < xdist && !nulldist)
 		{
 			newy = monsters[i][1] + 1;
-			if(test_position(monsters[i][0], newy, map))
+			if(test_position(monsters[i][0], newy, player, map))
 			{
 				monsters[i][1] = newy; 
 			}
@@ -225,7 +225,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][2], int map[map_d
 		else if(xdist > 0 && xdist >= ydist && !nulldist)
 		{
 			newx = monsters[i][0] - 1;
-			if(test_position(newx, monsters[i][1], map))
+			if(test_position(newx, monsters[i][1], player, map))
 			{
 				monsters[i][0] = newx;
 			}
@@ -233,13 +233,13 @@ void move_monsters(int player[3], int monsterc, int monsters[][2], int map[map_d
 		else if(xdist < 0 && xdist < ydist && !nulldist)
 		{
 			newx = monsters[i][0] + 1;
-			if(test_position(newx, monsters[i][1], map))
+			if(test_position(newx, monsters[i][1], player, map))
 			{
 				monsters[i][0] = newx;
 			}
 		}
 
-		if(monsters[i][0] == player[0] && monsters[i][1] == player[1])
+		if(xdist == 1 && ydist == 1)
 		{
 			fight(player, i, monsters);
 		}
