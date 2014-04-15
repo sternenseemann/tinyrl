@@ -1,7 +1,7 @@
 tinyRL
 ======
 
-![](https://i.imgur.com/mn1IXxQ.png)
+![](https://pbs.twimg.com/media/BlQUC65IEAAfLVC.png)
 
 tinyRL is a tiny rogue-like written in C. 
 
