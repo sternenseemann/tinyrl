@@ -298,7 +298,9 @@ int main(int argc, char *argv[])
 			case TB_EVENT_KEY: // a key got pressed
 				switch(event.key)
 				{
-					case TB_KEY_ESC: // we need to exit
+					case TB_KEY_CTRL_C:
+					case TB_KEY_CTRL_D:
+					case TB_KEY_ESC: 
 						tb_shutdown();
 						exit(0);
 						break; // yolo
