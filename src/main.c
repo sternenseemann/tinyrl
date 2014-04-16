@@ -243,7 +243,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][2], int map[map_d
 		int newxdist = monsters[i][0] - player[0];
 		int newydist = monsters[i][1] - player[1];
 		
-		if( (newxdist == 1 || newxdist == - 1) && ( newydist == 1 || newydist == -1))
+		if( (newxdist == 1 || newxdist == - 1) && ( newydist == 1 || newydist == -1) && ( monsters[i][0] == player[0] || monsters[i][1] == player[1]))
 		{
 			fight(player, i, monsters);
 		}
