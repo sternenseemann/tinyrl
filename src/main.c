@@ -301,6 +301,8 @@ int main(int argc, char *argv[])
 						break; // yolo
 					default: // let the move-function check if we have to move or not
 						move(player,event.key, event.ch, monsterc, monsters, map);
+						move_monsters(player, monsterc, monsters, map);
+
 						break;
 				}
 				if(event.ch == 'q')
@@ -317,10 +319,7 @@ int main(int argc, char *argv[])
 			tb_shutdown();
 			printf("\\o/ You escaped! \\o/\n");
 			break;	
-		}	
-
-		move_monsters(player, monsterc, monsters, map);
-
+		}		
 		/* are we dead? */
 		if(player[2] == 0){
 			tb_shutdown();
