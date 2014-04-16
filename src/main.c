@@ -102,7 +102,6 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int leve
 
 int test_position(int x, int y, int player[3], int map[map_dimensions[0]][map_dimensions[1]])
 {
-	// TODO: make sure that it returns 1 if the exit is at (x, y)
 	extern int map_dimensions[2];
 	// is the position in the terminal? Is there no '#'? Is there no player (needed for the better fighting mechanism)
 	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#' && (player[0] != x || player[1] != y)){ 
@@ -260,10 +259,7 @@ int main(int argc, char *argv[])
 
 	tb_init();
 
-	// pick a random location for the exit
 	srand(time(NULL));	
-	level_exit[0] = rand() % tb_width();
-	level_exit[1] = rand() % tb_height();
 
 	// init the size of the map. The map does NOT resize
 	map_dimensions[0] = tb_width();
@@ -275,6 +271,13 @@ int main(int argc, char *argv[])
 	int map[map_dimensions[0]][map_dimensions[1]];
 	
 	generate_map(map);
+
+	// pick a random location for the exit
+	// that is accesible to the player
+	do{
+		level_exit[0] = rand() % tb_width();
+		level_exit[1] = rand() % tb_height();
+	}while(!test_position(level_exit[0], level_exit[1], player, map));
 
 	int monsterc = rand() % 10;
 	int monsters[monsterc][2];
