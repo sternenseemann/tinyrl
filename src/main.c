@@ -40,13 +40,15 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 		int housex = house_start[0];
 		int housey = house_start[1];
 
+		// add the vertical walls
 		for(housey = house_start[1]; housey < (house_start[1] + 5); housey++)
 		{
-			// top
+			// left wall
 			map[housex][housey] = '#';
-			// bottom
+			// right wall
 			map[housex + 4][housey] = '#';
 		}
+		// add the horizontal walls
 		for(housex = house_start[0]; housex < (house_start[0] + 5); housex++)
 		{
 			// top
@@ -254,7 +256,8 @@ void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_d
 		
 		int newxdist = monsters[i][0] - player[0];
 		int newydist = monsters[i][1] - player[1];
-		
+	
+		// distance is <= 1 and player and monster share either the same x or y	
 		if( (abs(newxdist) <= 1) && ( abs(newydist) <= 1) && ( monsters[i][0] == player[0] || monsters[i][1] == player[1]))
 		{
 			fight(player, i, monsters);
@@ -308,7 +311,7 @@ int main(void)
 	{
 		draw(map, player, level_exit, monsterc, monsters);
 		tb_poll_event(&event); // wait for an event
-		//debug("got event");
+
 		switch(event.type)
 		{
 			case TB_EVENT_KEY: // a key got pressed
@@ -322,6 +325,7 @@ int main(void)
 						break; // yolo
 					default: // let the move-function check if we have to move or not
 						move(player,event.key, event.ch, monsterc, monsters, map);
+						// then move the monsters
 						move_monsters(player, monsterc, monsters, map);
 
 						break;
@@ -334,14 +338,14 @@ int main(void)
 				break;
 		}
 		
-		/* Did we get to the exit? */
+		// Did we get to the exit?
 		if(player[0] == level_exit[0] && player[1] == level_exit[1])
 		{
 			tb_shutdown();
 			printf("\\o/ You escaped! \\o/\n");
 			break;	
 		}		
-		/* are we dead? */
+		// are we dead? 
 		if(player[2] == 0){
 			tb_shutdown();
 			printf("/o\\ You are dead /o\\\n");
