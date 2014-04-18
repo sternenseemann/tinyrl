@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
 {
 	extern int map_dimensions[2];
 
-	int player[3] = { 0, 0, 5 }; // { x-position of the @, y-position of the @, lives of @ }
+	int player[3] = { 0, 0, 9 }; // { x-position of the @, y-position of the @, lives of @ }
 	int level_exit[2]; // { x-pos of exit, y-pos of exit }
 	struct tb_event event; // here will our events be stored
 
