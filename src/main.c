@@ -99,8 +99,8 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int leve
 		}
 	}
 	
-	tb_change_cell(player[0], player[1], '@', TB_GREEN, TB_DEFAULT);
-	tb_change_cell(level_exit[0], level_exit[1], 0x2588,TB_WHITE,TB_DEFAULT);
+	tb_change_cell(player[0], player[1], '@', TB_WHITE, TB_DEFAULT);
+	tb_change_cell(level_exit[0], level_exit[1], '>',TB_WHITE,TB_DEFAULT);
 
 	
 	tb_present();
