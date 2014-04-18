@@ -7,11 +7,11 @@ tinyRL is a tiny rogue-like written in C.
 
 ## Playing
 You will find yourself converted into a `@` in a black enviroment surrounded by evil red `m`.  
-But there's hope! Run to the `>` and escape! But watch out, the `m` will chase you and five of them together have the power to kill you.
+But there's hope! Run to the `>` and escape! But watch out, the `m` will chase you and will try to kill you.
 
 Control the `@` using `hjkl` or the arrow keys. If you get bored of this game (you won't, trust me), you can exit with `ESC` or `q`.
 
-	@..........................5 <- Your Lives
+	@..........................9 <- Your Lives
 	...........#####............
 	...m.......#...#............
 	...........#...#............
