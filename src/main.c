@@ -262,7 +262,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_d
 	}	
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
 	extern int map_dimensions[2];
 
