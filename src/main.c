@@ -73,7 +73,7 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	}
 }
 
-void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int level_exit[2], int monsterc, int monsters[][2])
+void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int level_exit[2], int monsterc, int monsters[][3])
 {
 	extern int map_dimensions[2];
 
@@ -118,7 +118,7 @@ int test_position(int x, int y, int player[3], int map[map_dimensions[0]][map_di
 }
 
 // returns - 1 if false; otherwise the index of the monster in monsters
-int test_for_monsters(int x, int y, int monsterc, int monsters[][2]) 
+int test_for_monsters(int x, int y, int monsterc, int monsters[][3]) 
 {
 	// walk trough the monsters and check if one is at the specific point
 	for(int i = 0; i < monsterc; i++)
@@ -131,14 +131,21 @@ int test_for_monsters(int x, int y, int monsterc, int monsters[][2])
 	return - 1;
 }
 
-void fight(int player[3], int monsteri, int monsters[][2])
+void fight(int player[3], int monsteri, int monsters[][3])
 {
+	// take one live of the player and the monster
 	player[2] = player[2] - 1;
-	monsters[monsteri][0] = -1; // put the monster into the "graveyard"
-	monsters[monsteri][1] = -1; // monsters at (-1,-1) are simply ignored 8)
+	monsters[monsteri][2] = monsters[monsteri][2] - 1;
+	
+	// if the monster is dead (0 lives)
+	if(monsters[monsteri][2] == 0)
+	{
+		monsters[monsteri][0] = -1; // put the monster into the "graveyard"
+		monsters[monsteri][1] = -1; // monsters at (-1,-1) are simply ignored 8)
+	}
 }
 
-void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters[][2], int map[map_dimensions[0]][map_dimensions[1]])
+void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters[][3], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
 
@@ -157,7 +164,7 @@ void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters
 	}
 }
 
-void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][2], int map[map_dimensions[0]][map_dimensions[1]])
+void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][3], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
 
@@ -193,7 +200,7 @@ void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][
 	}
 }
 
-void move_monsters(int player[3], int monsterc, int monsters[][2], int map[map_dimensions[0]][map_dimensions[1]])
+void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	for(int i = 0; i < monsterc; i++)
 	{
@@ -285,13 +292,16 @@ int main(int argc, char *argv[])
 		level_exit[1] = rand() % tb_height();
 	}while(!test_position(level_exit[0], level_exit[1], player, map));
 
+	// random count of monsters
 	int monsterc = rand() % 10;
-	int monsters[monsterc][2];
+	// monsters[n] = { x-position, y-position, lives }
+	int monsters[monsterc][3];
 	
 	for(int i = 0; i < monsterc; i++)
 	{
 		monsters[i][0] = rand() % tb_width();
 		monsters[i][1] = rand() % tb_height();
+		monsters[i][2] = 1 + ( rand() % 2);
 	}
 
 	while(1)
