@@ -223,7 +223,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_d
 		if(ydist > 0 && ydist >= xdist && !nulldist)
 		{
 			newy = monsters[i][1] - 1;
-			if(test_position(monsters[i][0], newy, player, map))
+			if(test_position(monsters[i][0], newy, player, map) && test_for_monsters(monsters[i][0], newy, monsterc, monsters) == -1)
 			{
 				monsters[i][1] = newy; 
 			}
@@ -231,7 +231,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_d
 		else if(ydist < 0 && ydist < xdist && !nulldist)
 		{
 			newy = monsters[i][1] + 1;
-			if(test_position(monsters[i][0], newy, player, map))
+			if(test_position(monsters[i][0], newy, player, map) && test_for_monsters(monsters[i][0], newy, monsterc, monsters) == -1)
 			{
 				monsters[i][1] = newy; 
 			}
@@ -239,7 +239,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_d
 		else if(xdist > 0 && xdist >= ydist && !nulldist)
 		{
 			newx = monsters[i][0] - 1;
-			if(test_position(newx, monsters[i][1], player, map))
+			if(test_position(newx, monsters[i][1], player, map) && test_for_monsters(newx, monsters[i][1], monsterc, monsters) == -1)
 			{
 				monsters[i][0] = newx;
 			}
@@ -247,7 +247,7 @@ void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_d
 		else if(xdist < 0 && xdist < ydist && !nulldist)
 		{
 			newx = monsters[i][0] + 1;
-			if(test_position(newx, monsters[i][1], player, map))
+			if(test_position(newx, monsters[i][1], player, map) && test_for_monsters(newx, monsters[i][1], monsterc, monsters) == -1)
 			{
 				monsters[i][0] = newx;
 			}
