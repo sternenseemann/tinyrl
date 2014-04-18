@@ -27,3 +27,12 @@ Should compile on most unixes, use a terminal emulator with UTF-8 support.
 	cd tinyrl
 	make
 	./bin/tinyrl # have fun!
+
+## Thanks to
+
+* [Lechindianer](https://github.com/Lechindianer) for fixing my Makefiles (although I have to fix the Makefiles again later)
+* [plomlompom](https://github.com/plomlompom) who made me stumble about roguelikes and roguelike development
+* [vis7mac](https://github.com/vis7mac) who complains and opens issues
+* [oderwat](https://github.com/oderwat) for complaining about my code style
+
+
