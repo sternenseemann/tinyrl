@@ -1,9 +1,11 @@
 #include "../termbox/termbox.h"
-//#include "debug.h"
 #include <stdio.h>
 #include <stdlib.h> // for rand
 #include <time.h> // for time()
 #include <math.h> // for abs
+
+#define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+
 
 int map_dimensions[2];
 
