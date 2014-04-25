@@ -281,7 +281,7 @@ int main(void)
 	struct liveform player;
 	player.x = 0;
 	player.y = 0;
-	player.lives = 5;
+	player.lives = 9;
 	player.c = '@';
 	
 	int level_exit[2]; // { x-pos of exit, y-pos of exit }
