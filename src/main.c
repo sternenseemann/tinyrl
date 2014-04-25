@@ -9,6 +9,19 @@
 
 int map_dimensions[2];
 
+// currently for player always a pointer is passed as a argument
+// since monsters is an array it behaves like a pointer and you can
+// modify its contents -> no need to pass it as a pointer
+struct liveform {
+	// position
+	int x;
+	int y;
+	// lives of the liveform
+	unsigned int lives;
+	// what does it look like?
+	unsigned int c;
+};
+
 void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
@@ -77,7 +90,7 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	}
 }
 
-void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int level_exit[2], int monsterc, int monsters[][3])
+void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player, int level_exit[2], int monsterc, struct liveform monsters[])
 {
 	extern int map_dimensions[2];
 
@@ -92,29 +105,28 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], int player[3], int leve
 		}
 
 	}
-	
-	tb_change_cell(tb_width() - 1,0,player[2] + 0x30,TB_WHITE,TB_DEFAULT);	
+
+	tb_change_cell(tb_width() - 1, 0, player->lives + '0', TB_WHITE, TB_DEFAULT);	
 	for(int i = 0; i < monsterc; i++)
 	{
 		// the monster hasn't been put on the "graveyard" in (-1,-1)
-		if(monsters[i][0] != - 1 && monsters[i][1] != - 1) 
+		if(monsters[i].x != - 1 && monsters[i].y != - 1) 
 		{
-			tb_change_cell(monsters[i][0],monsters[i][1], 'm', TB_RED, TB_DEFAULT);
+			tb_change_cell(monsters[i].x,monsters[i].y, monsters[i].c, TB_RED, TB_DEFAULT);
 		}
 	}
 	
-	tb_change_cell(player[0], player[1], '@', TB_WHITE, TB_DEFAULT);
+	tb_change_cell(player->x, player->y, player->c, TB_WHITE, TB_DEFAULT);
 	tb_change_cell(level_exit[0], level_exit[1], '>',TB_WHITE,TB_DEFAULT);
 
-	
 	tb_present();
 }
 
-int test_position(int x, int y, int player[3], int map[map_dimensions[0]][map_dimensions[1]])
+int test_position(int x, int y, struct liveform *player, int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
 	// is the position in the terminal? Is there no '#'? Is there no player (needed for the better fighting mechanism)
-	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#' && (player[0] != x || player[1] != y)){ 
+	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#' && (player->x != x || player->y != y)){ 
 		return 1;
 	}else{
 		return 0;
@@ -122,12 +134,12 @@ int test_position(int x, int y, int player[3], int map[map_dimensions[0]][map_di
 }
 
 // returns - 1 if false; otherwise the index of the monster in monsters
-int test_for_monsters(int x, int y, int monsterc, int monsters[][3]) 
+int test_for_monsters(int x, int y, int monsterc, struct liveform monsters[]) 
 {
 	// walk trough the monsters and check if one is at the specific point
 	for(int i = 0; i < monsterc; i++)
 	{
-		if(monsters[i][0] == x && monsters[i][1] == y)
+		if(monsters[i].x == x && monsters[i].y == y)
 		{
 			return i;
 		}
@@ -135,21 +147,21 @@ int test_for_monsters(int x, int y, int monsterc, int monsters[][3])
 	return - 1;
 }
 
-void fight(int player[3], int monsteri, int monsters[][3])
+void fight(struct liveform *player, int monsteri, struct liveform monsters[])
 {
 	// take one live of the player and the monster
-	player[2] = player[2] - 1;
-	monsters[monsteri][2] = monsters[monsteri][2] - 1;
+	player->lives -= 1;
+	monsters[monsteri].lives -= 1;
 	
 	// if the monster is dead (0 lives)
-	if(monsters[monsteri][2] == 0)
+	if(monsters[monsteri].lives == 0)
 	{
-		monsters[monsteri][0] = -1; // put the monster into the "graveyard"
-		monsters[monsteri][1] = -1; // monsters at (-1,-1) are simply ignored 8)
+		monsters[monsteri].x = -1; // put the monster into the "graveyard"
+		monsters[monsteri].y = -1; // monsters at (-1,-1) are simply ignored 8)
 	}
 }
 
-void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters[][3], int map[map_dimensions[0]][map_dimensions[1]])
+void handle_move(int new_x, int new_y, struct liveform *player, int monsterc, struct liveform monsters[], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
 
@@ -158,8 +170,8 @@ void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters
 	// position is in the terminal and there's no monster -> move there
 	if(test_position(new_x, new_y, player, map) == 1 && monster_there == - 1)
 	{ 
-		player[0] = new_x;
-		player[1] = new_y;
+		player->x = new_x;
+		player->y = new_y;
 	}
 	// there's a monster -> fight
 	else if(test_position(new_x, new_y, player, map) == 1 && monster_there != - 1) 
@@ -168,54 +180,49 @@ void handle_move(int new_x, int new_y, int player[3], int monsterc, int monsters
 	}
 }
 
-void move(int player[], uint16_t key, uint32_t ch, int monsterc, int monsters[][3], int map[map_dimensions[0]][map_dimensions[1]])
+void move(struct liveform *player, uint16_t key, uint32_t ch, int monsterc, struct liveform monsters[], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
 
-	int new_x, new_y;
+	int new_x = player->x;
+	int new_y = player->y;
 	
 	if(key == TB_KEY_ARROW_UP || ch == 'k')
 	{
-		new_x = player[0];
-		new_y = player[1] - 1;
-
-		handle_move(new_x, new_y, player, monsterc, monsters, map);
+		new_x = player->x;
+		new_y = player->y - 1;
 	}
 	else if(key == TB_KEY_ARROW_DOWN || ch == 'j')
 	{
-		new_x = player[0];
-		new_y = player[1] + 1;
-
-		handle_move(new_x, new_y, player, monsterc, monsters, map);	
+		new_x = player->x;
+		new_y = player->y + 1;
 	}
 	else if(key == TB_KEY_ARROW_LEFT || ch == 'h')
 	{
-		new_x = player[0] - 1;
-		new_y = player[1];
-		
-		handle_move(new_x, new_y, player, monsterc, monsters, map);		
+		new_x = player->x - 1;
+		new_y = player->y;
 	}
 	else if(key == TB_KEY_ARROW_RIGHT || ch == 'l')
 	{
-		new_x = player[0] + 1;
-		new_y = player[1];
-		
-		handle_move(new_x, new_y, player, monsterc, monsters, map);
+		new_x = player->x + 1;
+		new_y = player->y;
 	}
+
+	handle_move(new_x, new_y, player, monsterc, monsters, map);
 }
 
-void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_dimensions[0]][map_dimensions[1]])
+void move_monsters(struct liveform *player, int monsterc, struct liveform monsters[], int map[map_dimensions[0]][map_dimensions[1]])
 {
 	for(int i = 0; i < monsterc; i++)
 	{
 		// is the monster on the "graveyard" at (-1,-1)
-		if(monsters[i][0] == -1 || monsters[i][1] == -1)
+		if(monsters[i].x == -1 || monsters[i].y == -1)
 		{
 		     continue;
 		}
 		// calculate x-distance and y-distance
-		int xdist = monsters[i][0] - player[0];
-		int ydist = monsters[i][1] - player[1];
+		int xdist = monsters[i].x - player->x;
+		int ydist = monsters[i].y - player->y;
 
 		// is there no way to go?
 		int nulldist = (ydist == 0) && (xdist == 0); 
@@ -224,43 +231,43 @@ void move_monsters(int player[3], int monsterc, int monsters[][3], int map[map_d
 
 		if(ydist > 0 && ydist >= xdist && !nulldist)
 		{
-			newy = monsters[i][1] - 1;
-			if(test_position(monsters[i][0], newy, player, map) && test_for_monsters(monsters[i][0], newy, monsterc, monsters) == -1)
+			newy = monsters[i].y - 1;
+			if(test_position(monsters[i].x, newy, player, map) && test_for_monsters(monsters[i].x, newy, monsterc, monsters) == -1)
 			{
-				monsters[i][1] = newy; 
+				monsters[i].y = newy; 
 			}
 		}
 		else if(ydist < 0 && ydist < xdist && !nulldist)
 		{
-			newy = monsters[i][1] + 1;
-			if(test_position(monsters[i][0], newy, player, map) && test_for_monsters(monsters[i][0], newy, monsterc, monsters) == -1)
+			newy = monsters[i].y + 1;
+			if(test_position(monsters[i].x, newy, player, map) && test_for_monsters(monsters[i].x, newy, monsterc, monsters) == -1)
 			{
-				monsters[i][1] = newy; 
+				monsters[i].y = newy; 
 			}
 		}
 		else if(xdist > 0 && xdist >= ydist && !nulldist)
 		{
-			newx = monsters[i][0] - 1;
-			if(test_position(newx, monsters[i][1], player, map) && test_for_monsters(newx, monsters[i][1], monsterc, monsters) == -1)
+			newx = monsters[i].x - 1;
+			if(test_position(newx, monsters[i].y, player, map) && test_for_monsters(newx, monsters[i].y, monsterc, monsters) == -1)
 			{
-				monsters[i][0] = newx;
+				monsters[i].x = newx;
 			}
 		}
 		else if(xdist < 0 && xdist < ydist && !nulldist)
 		{
-			newx = monsters[i][0] + 1;
-			if(test_position(newx, monsters[i][1], player, map) && test_for_monsters(newx, monsters[i][1], monsterc, monsters) == -1)
+			newx = monsters[i].x + 1;
+			if(test_position(newx, monsters[i].y, player, map) && test_for_monsters(newx, monsters[i].y, monsterc, monsters) == -1)
 			{
-				monsters[i][0] = newx;
+				monsters[i].x = newx;
 			}
 		}
 
 		
-		int newxdist = monsters[i][0] - player[0];
-		int newydist = monsters[i][1] - player[1];
+		int newxdist = monsters[i].x - player->x;
+		int newydist = monsters[i].y - player->y;
 	
 		// distance is <= 1 and player and monster share either the same x or y	
-		if( (abs(newxdist) <= 1) && ( abs(newydist) <= 1) && ( monsters[i][0] == player[0] || monsters[i][1] == player[1]))
+		if( (abs(newxdist) <= 1) && ( abs(newydist) <= 1) && ( monsters[i].x == player->x || monsters[i].y == player->y))
 		{
 			fight(player, i, monsters);
 		}
@@ -271,13 +278,19 @@ int main(void)
 {
 	extern int map_dimensions[2];
 
-	int player[3] = { 0, 0, 9 }; // { x-position of the @, y-position of the @, lives of @ }
+	struct liveform player;
+	player.x = 0;
+	player.y = 0;
+	player.lives = 5;
+	player.c = '@';
+	
 	int level_exit[2]; // { x-pos of exit, y-pos of exit }
 	struct tb_event event; // here will our events be stored
 
 	tb_init();
 
-	srand(time(NULL));	
+	time_t seed = time(NULL);
+	srand(seed);
 
 	// init the size of the map. The map does NOT resize
 	map_dimensions[0] = tb_width();
@@ -295,23 +308,24 @@ int main(void)
 	do{
 		level_exit[0] = rand() % tb_width();
 		level_exit[1] = rand() % tb_height();
-	}while(!test_position(level_exit[0], level_exit[1], player, map));
+	}while(!test_position(level_exit[0], level_exit[1], &player, map));
 
 	// random count of monsters
 	int monsterc = rand() % 10;
 	// monsters[n] = { x-position, y-position, lives }
-	int monsters[monsterc][3];
+	struct liveform monsters[monsterc];
 	
 	for(int i = 0; i < monsterc; i++)
 	{
-		monsters[i][0] = rand() % tb_width();
-		monsters[i][1] = rand() % tb_height();
-		monsters[i][2] = 1 + ( rand() % 2);
+		monsters[i].x = rand() % tb_width();
+		monsters[i].y = rand() % tb_height();
+		monsters[i].lives = 1 + ( rand() % 2);
+		monsters[i].c = 'm';
 	}
 
 	while(1)
 	{
-		draw(map, player, level_exit, monsterc, monsters);
+		draw(map, &player, level_exit, monsterc, monsters);
 		tb_poll_event(&event); // wait for an event
 
 		switch(event.type)
@@ -326,9 +340,9 @@ int main(void)
 						exit(0);
 						break; // yolo
 					default: // let the move-function check if we have to move or not
-						move(player,event.key, event.ch, monsterc, monsters, map);
+						move(&player,event.key, event.ch, monsterc, monsters, map);
 						// then move the monsters
-						move_monsters(player, monsterc, monsters, map);
+						move_monsters(&player, monsterc, monsters, map);
 
 						break;
 				}
@@ -341,14 +355,14 @@ int main(void)
 		}
 		
 		// Did we get to the exit?
-		if(player[0] == level_exit[0] && player[1] == level_exit[1])
+		if(player.x == level_exit[0] && player.y == level_exit[1])
 		{
 			tb_shutdown();
 			printf("\\o/ You escaped! \\o/\n");
 			break;	
 		}		
 		// are we dead? 
-		if(player[2] == 0){
+		if(player.lives == 0){
 			tb_shutdown();
 			printf("/o\\ You are dead /o\\\n");
 			break;
