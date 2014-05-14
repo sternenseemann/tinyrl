@@ -6,6 +6,11 @@
 
 #define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
+enum{
+	FALSE = 0,
+	TRUE = 1,
+};
+
 
 int map_dimensions[2];
 
@@ -30,7 +35,7 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	// map[map_dimensions[0]][map_dimensions[1]]
 	//
 	// fields are accesed like map[x][y] (which could be '.' or '#' etc.)
-	
+
 	// generate a house
 	// looks like that:
 	// ┌-- The coordinates for this brick are randomly chosen as a base for generation.
@@ -46,12 +51,12 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	// indexes start with 0 -> we need to subtract 6
 	int house_start[2];
 	// Generate min. 1 house
-	int housec = 1 + ( rand() % 3);	
-	
+	int housec = 1 + ( rand() % 3);
+
 	while(housec > 0){
 		house_start[0] = rand() % ( map_dimensions[0] - 6 ); 
-		house_start[1] = rand() % ( map_dimensions[1] - 6 );	
-	
+		house_start[1] = rand() % ( map_dimensions[1] - 6 );
+
 		int housex = house_start[0];
 		int housey = house_start[1];
 
@@ -74,8 +79,9 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 			}
 		}
 		--housec;
-	}	
-	// fill the rest with ground ('.')	
+	}
+
+	// fill the rest with ground ('.')
 	int mapx;
 	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
 	{
@@ -90,12 +96,12 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	}
 }
 
-void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player, int level_exit[2], int monsterc, struct liveform monsters[])
+void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player, int stairs[2], int monsterc, struct liveform monsters[])
 {
 	extern int map_dimensions[2];
 
 	tb_clear();
-	
+
 	int mapx;
 	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
 	{
@@ -106,7 +112,7 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 
 	}
 
-	tb_change_cell(tb_width() - 1, 0, player->lives + '0', TB_WHITE, TB_DEFAULT);	
+	tb_change_cell(tb_width() - 1, 0, player->lives + '0', TB_WHITE, TB_DEFAULT);
 	for(int i = 0; i < monsterc; i++)
 	{
 		// the monster hasn't been put on the "graveyard" in (-1,-1)
@@ -115,9 +121,9 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 			tb_change_cell(monsters[i].x,monsters[i].y, monsters[i].c, TB_RED, TB_DEFAULT);
 		}
 	}
-	
+
 	tb_change_cell(player->x, player->y, player->c, TB_WHITE, TB_DEFAULT);
-	tb_change_cell(level_exit[0], level_exit[1], '>',TB_WHITE,TB_DEFAULT);
+	tb_change_cell(stairs[0], stairs[1], '>',TB_WHITE,TB_DEFAULT);
 
 	tb_present();
 }
@@ -152,7 +158,7 @@ void fight(struct liveform *player, int monsteri, struct liveform monsters[])
 	// take one live of the player and the monster
 	player->lives -= 1;
 	monsters[monsteri].lives -= 1;
-	
+
 	// if the monster is dead (0 lives)
 	if(monsters[monsteri].lives == 0)
 	{
@@ -186,7 +192,7 @@ void move(struct liveform *player, uint16_t key, uint32_t ch, int monsterc, stru
 
 	int new_x = player->x;
 	int new_y = player->y;
-	
+
 	if(key == TB_KEY_ARROW_UP || ch == 'k')
 	{
 		new_x = player->x;
@@ -226,7 +232,7 @@ void move_monsters(struct liveform *player, int monsterc, struct liveform monste
 
 		// is there no way to go?
 		int nulldist = (ydist == 0) && (xdist == 0); 
-		
+
 		int newx, newy;
 
 		if(ydist > 0 && ydist >= xdist && !nulldist)
@@ -262,111 +268,158 @@ void move_monsters(struct liveform *player, int monsterc, struct liveform monste
 			}
 		}
 
-		
+
 		int newxdist = monsters[i].x - player->x;
 		int newydist = monsters[i].y - player->y;
-	
-		// distance is <= 1 and player and monster share either the same x or y	
+
+		// distance is <= 1 and player and monster share either the same x or y
 		if( (abs(newxdist) <= 1) && ( abs(newydist) <= 1) && ( monsters[i].x == player->x || monsters[i].y == player->y))
 		{
 			fight(player, i, monsters);
 		}
-	}	
+	}
 }
 
 int main(void)
 {
 	extern int map_dimensions[2];
 
+	// controller of the main loops
+	int exit = FALSE;
+	// did we win or die?
+	int won = FALSE;
+	// do we want to save?
+	int save = FALSE;
+
+	// level counter
+	int level = 1;
+
+	// intialize the player struct
 	struct liveform player;
-	player.x = 0;
-	player.y = 0;
 	player.lives = 9;
 	player.c = '@';
-	
-	int level_exit[2]; // { x-pos of exit, y-pos of exit }
-	struct tb_event event; // here will our events be stored
 
+	// { x-pos of the stairs to the next level, y-pos of stairs }
+	int stairs[2]; 
+
+	// here will our events be stored
+	struct tb_event event; 
+
+	// start termbox
 	tb_init();
 
+	// seed our shitty RNG
 	time_t seed = time(NULL);
 	srand(seed);
 
-	// init the size of the map. The map does NOT resize
-	map_dimensions[0] = tb_width();
-	map_dimensions[1] = tb_height();
-	
-	// create an array of the size
-	// see generate_map for a further explanition
-	// of the data structure
-	int map[map_dimensions[0]][map_dimensions[1]];
-	
-	generate_map(map);
-
-	// pick a random location for the exit
-	// that is accesible to the player
 	do{
-		level_exit[0] = rand() % tb_width();
-		level_exit[1] = rand() % tb_height();
-	}while(!test_position(level_exit[0], level_exit[1], &player, map));
+		// reset the player's location
+		player.x = 0;
+		player.y = 0;
 
-	// random count of monsters
-	int monsterc = rand() % 10;
-	// monsters[n] = { x-position, y-position, lives }
-	struct liveform monsters[monsterc];
-	
-	for(int i = 0; i < monsterc; i++)
-	{
-		monsters[i].x = rand() % tb_width();
-		monsters[i].y = rand() % tb_height();
-		monsters[i].lives = 1 + ( rand() % 2);
-		monsters[i].c = 'm';
-	}
+		// init the size of the map. The map does NOT resize
+		map_dimensions[0] = tb_width();
+		map_dimensions[1] = tb_height();
 
-	while(1)
-	{
-		draw(map, &player, level_exit, monsterc, monsters);
-		tb_poll_event(&event); // wait for an event
+		// create an array of the size
+		// see generate_map for a further explanition
+		// of the data structure
+		int map[map_dimensions[0]][map_dimensions[1]];
 
-		switch(event.type)
+		generate_map(map);
+
+		// pick a random location for the exit
+		// that is accesible to the player
+		do{
+			stairs[0] = rand() % tb_width();
+			stairs[1] = rand() % tb_height();
+		}while(!test_position(stairs[0], stairs[1], &player, map));
+
+		// random count of monsters
+		int monsterc = rand() % 10;
+		// monsters[n] = { x-position, y-position, lives }
+		struct liveform monsters[monsterc];
+
+		for(int i = 0; i < monsterc; i++)
 		{
-			case TB_EVENT_KEY: // a key got pressed
-				switch(event.key)
-				{
-					case TB_KEY_CTRL_C:
-					case TB_KEY_CTRL_D:
-					case TB_KEY_ESC: 
-						tb_shutdown();
-						exit(0);
-						break; // yolo
-					default: // let the move-function check if we have to move or not
-						move(&player,event.key, event.ch, monsterc, monsters, map);
-						// then move the monsters
-						move_monsters(&player, monsterc, monsters, map);
+			monsters[i].x = rand() % tb_width();
+			monsters[i].y = rand() % tb_height();
+			monsters[i].lives = 1 + ( rand() % 2);
+			monsters[i].c = 'm';
+		}
 
-						break;
-				}
-				if(event.ch == 'q')
-				{
-					tb_shutdown();
-					exit(0);
-				}
+		while(!exit)
+		{
+			draw(map, &player, stairs, monsterc, monsters);
+			tb_poll_event(&event); // wait for an event
+
+			switch(event.type)
+			{
+				case TB_EVENT_KEY: // a key got pressed
+					switch(event.key)
+					{
+						case TB_KEY_CTRL_C:
+						case TB_KEY_CTRL_D:
+						case TB_KEY_ESC: 
+							exit = TRUE;
+							save = TRUE;
+							won = FALSE;
+							break;
+						default: // let the move-function check if we have to move or not
+							move(&player,event.key, event.ch, monsterc, monsters, map);
+							// then move the monsters
+							move_monsters(&player, monsterc, monsters, map);
+							break;
+					}
+
+					// this doesn't feel right,
+					// using tb_event and switch statements is a bit annoying
+					if(event.ch == 'q')
+					{
+						exit = TRUE;
+						save = TRUE;
+						won = FALSE;
+					}
+					break;
+			}
+
+			// did we reach the stairs to the next level?
+			if(player.x == stairs[0] && player.y == stairs[1])
+			{
+				// break out of the level loop
+				// but not out of the level generation loop
 				break;
+			}
+
+			// are we dead? 
+			if(player.lives == 0){
+				exit = 1;
+				won = FALSE;
+			}
 		}
-		
-		// Did we get to the exit?
-		if(player.x == level_exit[0] && player.y == level_exit[1])
+
+		// if we don't exit the game
+		// increase the level counter
+		if(!exit)
 		{
-			tb_shutdown();
-			printf("\\o/ You escaped! \\o/\n");
-			break;	
-		}		
-		// are we dead? 
-		if(player.lives == 0){
-			tb_shutdown();
-			printf("/o\\ You are dead /o\\\n");
-			break;
+			level++;
 		}
+
+	}while(!exit);
+
+	tb_shutdown();
+
+	if(save)
+	{
+		// call save routine and so on
+		// is a TODO
+		printf("You saved at level %d of the dungeon\n", level);
+	}
+	else if(won)
+	{
+		printf("\\o/ You won at level %d of the dungeon\n", level);
+	}else{
+		printf("You died at level %d of the dungeon\n", level);
 	}
 
 	return 0;
