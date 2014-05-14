@@ -9,7 +9,7 @@ tinyRL is a tiny rogue-like written in C.
 You will find yourself converted into a `@` in a black enviroment surrounded by evil red `m`.  
 But there's hope! Run to the `>` and escape! But watch out, the `m` will chase you and will try to kill you.
 
-Control the `@` using `hjkl` or the arrow keys. If you get bored of this game (you won't, trust me), you can exit with `ESC` or `q`.
+Control the `@` using `hjkl` or the arrow keys. If you get bored of this game (you won't, trust me), you can exit with `ESC` `^(C|D)` or `q`.
 
 	@..........................9 <- Your Lives
 	...........#####............
@@ -27,6 +27,13 @@ Should compile on most unixes, use a terminal emulator with UTF-8 support.
 	cd tinyrl
 	make
 	./bin/tinyrl # have fun!
+
+## TODO
+* implement an saving routine
+* think about a real concept and adjust the map generation
+* implement Field of Vision (FOV)
+* implement Inventory
+* ...
 
 ## Thanks to
 
