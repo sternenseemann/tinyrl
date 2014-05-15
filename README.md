@@ -6,7 +6,7 @@ tinyRL
 tinyRL is a tiny rogue-like written in C. 
 
 ## Playing
-You will find yourself converted into a `@` in a black enviroment surrounded by evil red monsters.  
+You will find yourself converted into a `@` in a black enviroment surrounded by evil monsters.  
 But there's hope! Run to the `>` and escape to reach the next level! But watch out, the monsters will chase you and will try to kill you.
 
 Somewhen you maybe will be able to finish your adventure.
