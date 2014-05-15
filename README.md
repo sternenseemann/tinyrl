@@ -40,6 +40,7 @@ Should compile on most unixes, use a terminal emulator with UTF-8 support.
 ## TODO
 * implement an saving routine
 * think about a real concept and adjust the map generation
+* generate monsters and houses (or whatever) based on window size
 * implement Field of Vision (FOV)
 * implement Inventory
 * ...
