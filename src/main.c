@@ -3,6 +3,7 @@
 #include <stdlib.h> // for rand
 #include <time.h> // for time()
 #include <math.h> // for abs
+#include <string.h> // for strcat and so on
 
 #define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
@@ -11,6 +12,12 @@ enum{
 	TRUE = 1,
 };
 
+#define MAP_START_X 0
+#define MAP_START_Y 1
+#define MAP_END_X map_dimensions[0]
+#define MAP_END_Y map_dimensions[1]
+
+#define PLAYER_LIVES 9
 
 int map_dimensions[2];
 
@@ -30,6 +37,17 @@ struct liveform {
 void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
+	
+	// intialize the map by filling it with spaces
+	int mapx;
+	int mapy;
+	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
+	{
+		for(mapy = 0; mapy < map_dimensions[1]; mapy++)
+		{
+			map[mapx][mapy] = ' ';
+		}
+	}
 	// generate map
 	// map is a array of arrays:
 	// map[map_dimensions[0]][map_dimensions[1]]
@@ -54,8 +72,8 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	int housec = 1 + ( rand() % 3);
 
 	while(housec > 0){
-		house_start[0] = rand() % ( map_dimensions[0] - 6 ); 
-		house_start[1] = rand() % ( map_dimensions[1] - 6 );
+		house_start[0] = rand() % (MAP_END_X - MAP_START_X - 6) + MAP_START_X; 
+		house_start[1] = rand() % (MAP_END_Y - MAP_START_Y - 6) + MAP_START_Y;
 
 		int housex = house_start[0];
 		int housey = house_start[1];
@@ -82,11 +100,9 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	}
 
 	// fill the rest with ground ('.')
-	int mapx;
-	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
+	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++)
 	{
-		int mapy;
-		for(mapy = 0; mapy < map_dimensions[1]; mapy++){
+		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++){
 			if(map[mapx][mapy] != '#')
 			{
 				map[mapx][mapy] = '.';
@@ -96,24 +112,52 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	}
 }
 
-void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player, int stairs[2], int monsterc, struct liveform monsters[])
+void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player, int stairs[2], int level, int monsterc, struct liveform monsters[])
 {
 	extern int map_dimensions[2];
-
+	// clear the screen
 	tb_clear();
-
+	
+	// walk trough the map...
 	int mapx;
+	int mapy;
 	for(mapx = 0; mapx < map_dimensions[0]; mapx++)
 	{
-		int mapy;
 		for(mapy = 0; mapy < map_dimensions[1]; mapy++){
+			// ...and draw the map
 			tb_change_cell(mapx,mapy,map[mapx][mapy],TB_WHITE,TB_DEFAULT);
 		}
 
 	}
+	
+	// draw the status bar
+	char level_str[100];
+	char lives_str[100];
+	sprintf(level_str, "Level: %d |", level);
+	sprintf(lives_str, "Lives: %d/%d", player->lives, PLAYER_LIVES); 
 
-	tb_change_cell(tb_width() - 1, 0, player->lives + '0', TB_WHITE, TB_DEFAULT);
-	for(int i = 0; i < monsterc; i++)
+
+	int stri;
+	int level_str_end;
+	for(stri = 0; level_str[stri] != '\0'; stri++)
+	{
+		tb_change_cell(0 + stri, 0, (uint32_t) level_str[stri], TB_WHITE, TB_DEFAULT);
+	}
+	
+	// start drawing from the end of the level string + 1 space
+	level_str_end = stri + 1;
+
+	for(stri = 0; lives_str[stri] != '\0'; stri++)
+	{
+		tb_change_cell(0 + level_str_end + stri, 0, (uint32_t) lives_str[stri], TB_WHITE, TB_DEFAULT);
+	}
+
+	// draw the stairs to the next level
+	tb_change_cell(stairs[0], stairs[1], '>',TB_WHITE,TB_DEFAULT);
+
+	// draw the monsters
+	int i;
+	for(i = 0; i < monsterc; i++)
 	{
 		// the monster hasn't been put on the "graveyard" in (-1,-1)
 		if(monsters[i].x != - 1 && monsters[i].y != - 1) 
@@ -122,9 +166,9 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 		}
 	}
 
+	// draw the player!
 	tb_change_cell(player->x, player->y, player->c, TB_WHITE, TB_DEFAULT);
-	tb_change_cell(stairs[0], stairs[1], '>',TB_WHITE,TB_DEFAULT);
-
+	// present the screen to the player
 	tb_present();
 }
 
@@ -132,7 +176,7 @@ int test_position(int x, int y, struct liveform *player, int map[map_dimensions[
 {
 	extern int map_dimensions[2];
 	// is the position in the terminal? Is there no '#'? Is there no player (needed for the better fighting mechanism)
-	if(x >= 0 && x < tb_width() && y >= 0 && y < tb_height() && map[x][y] != '#' && (player->x != x || player->y != y)){ 
+	if(x >= MAP_START_X && x < MAP_END_X && y >= MAP_START_Y && y < MAP_END_Y && map[x][y] != '#' && (player->x != x || player->y != y)){ 
 		return 1;
 	}else{
 		return 0;
@@ -296,7 +340,7 @@ int main(void)
 
 	// intialize the player struct
 	struct liveform player;
-	player.lives = 9;
+	player.lives = PLAYER_LIVES;
 	player.c = '@';
 
 	// { x-pos of the stairs to the next level, y-pos of stairs }
@@ -314,8 +358,8 @@ int main(void)
 
 	do{
 		// reset the player's location
-		player.x = 0;
-		player.y = 0;
+		player.x = MAP_START_X;
+		player.y = MAP_START_Y;
 
 		// init the size of the map. The map does NOT resize
 		map_dimensions[0] = tb_width();
@@ -331,8 +375,8 @@ int main(void)
 		// pick a random location for the exit
 		// that is accesible to the player
 		do{
-			stairs[0] = rand() % tb_width();
-			stairs[1] = rand() % tb_height();
+			stairs[0] = rand() % (MAP_END_X - MAP_START_X) + MAP_START_X;
+			stairs[1] = rand() % (MAP_END_Y - MAP_START_Y) + MAP_START_Y;
 		}while(!test_position(stairs[0], stairs[1], &player, map));
 
 		// random count of monsters
@@ -342,15 +386,15 @@ int main(void)
 
 		for(int i = 0; i < monsterc; i++)
 		{
-			monsters[i].x = rand() % tb_width();
-			monsters[i].y = rand() % tb_height();
+			monsters[i].x = rand() % (MAP_END_X - MAP_START_X) + MAP_START_X;
+			monsters[i].y = rand() % (MAP_END_Y - MAP_START_Y) + MAP_START_Y;
 			monsters[i].lives = 1 + ( rand() % 2);
 			monsters[i].c = 'm';
 		}
 
 		while(!exit)
 		{
-			draw(map, &player, stairs, monsterc, monsters);
+			draw(map, &player, stairs, level,  monsterc, monsters);
 			tb_poll_event(&event); // wait for an event
 
 			switch(event.type)
