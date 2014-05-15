@@ -438,12 +438,6 @@ int main(void)
 						won = FALSE;
 					}
 					break;
-				case TB_EVENT_RESIZE:
-					// resizing is basically cheating, so we quit :)
-					exit = TRUE;
-					save = TRUE;
-					won = FALSE;
-					break;
 			}
 
 			// did we reach the stairs to the next level?
