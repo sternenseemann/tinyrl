@@ -3,7 +3,6 @@
 #include <stdlib.h> // for rand
 #include <time.h> // for time()
 #include <math.h> // for abs
-#include <string.h> // for strcat and so on
 
 #define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
