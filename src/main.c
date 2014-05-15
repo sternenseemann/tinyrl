@@ -31,6 +31,8 @@ struct liveform {
 	unsigned int lives;
 	// what does it look like?
 	unsigned int c;
+	// what's its color?
+	uint16_t color;
 };
 
 void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
@@ -135,7 +137,6 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 	sprintf(level_str, "Level: %d |", level);
 	sprintf(lives_str, "Lives: %d/%d", player->lives, PLAYER_LIVES); 
 
-
 	int stri;
 	int level_str_end;
 	for(stri = 0; level_str[stri] != '\0'; stri++)
@@ -161,12 +162,12 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 		// the monster hasn't been put on the "graveyard" in (-1,-1)
 		if(monsters[i].x != - 1 && monsters[i].y != - 1) 
 		{
-			tb_change_cell(monsters[i].x,monsters[i].y, monsters[i].c, TB_RED, TB_DEFAULT);
+			tb_change_cell(monsters[i].x,monsters[i].y, monsters[i].c, monsters[i].color, TB_DEFAULT);
 		}
 	}
 
 	// draw the player!
-	tb_change_cell(player->x, player->y, player->c, TB_WHITE, TB_DEFAULT);
+	tb_change_cell(player->x, player->y, player->c, player->color, TB_DEFAULT);
 	// present the screen to the player
 	tb_present();
 }
@@ -341,6 +342,7 @@ int main(void)
 	struct liveform player;
 	player.lives = PLAYER_LIVES;
 	player.c = '@';
+	player.color = TB_WHITE;
 
 	// { x-pos of the stairs to the next level, y-pos of stairs }
 	int stairs[2]; 
@@ -388,7 +390,19 @@ int main(void)
 			monsters[i].x = rand() % (MAP_END_X - MAP_START_X) + MAP_START_X;
 			monsters[i].y = rand() % (MAP_END_Y - MAP_START_Y) + MAP_START_Y;
 			monsters[i].lives = 1 + ( rand() % 2);
-			monsters[i].c = 'm';
+
+			if(monsters[i].lives > 1)
+			{
+				// it's an ork and more dangerous
+				monsters[i].c = 'o';
+				monsters[i].color = TB_GREEN;
+			}
+			else
+			{
+				// it's "only" a warg
+				monsters[i].c = 'w';
+				monsters[i].color = TB_CYAN;
+			}
 		}
 
 		while(!exit)

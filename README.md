@@ -6,8 +6,8 @@ tinyRL
 tinyRL is a tiny rogue-like written in C. 
 
 ## Playing
-You will find yourself converted into a `@` in a black enviroment surrounded by evil red `m`.  
-But there's hope! Run to the `>` and escape to reach the next level! But watch out, the `m` will chase you and will try to kill you.
+You will find yourself converted into a `@` in a black enviroment surrounded by evil red monsters.  
+But there's hope! Run to the `>` and escape to reach the next level! But watch out, the monsters will chase you and will try to kill you.
 
 Somewhen you maybe will be able to finish your adventure.
 
@@ -16,12 +16,18 @@ Control the `@` using `hjkl` or the arrow keys. If you get bored of this game (y
 	Level: 1 | Lives 9/9
 	@...........................
 	...........#####............
-	...m.......#...#............
+	...o.......#...#............
 	...........#...#............
-	.....m.....#...#............
+	.....w.....#...#............
 	...........#...#...>........
 	...........##.##...^........
 	 A house! -^       └ Exit!
+
+### Monsters
+Currently there are two types:
+
+* cyan `w`: A warg – a wolf-like creature with one live
+* green `o`: A orc – once they were elves and they got two lives
 
 ## Building
 Should compile on most unixes, use a terminal emulator with UTF-8 support.
