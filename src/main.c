@@ -455,7 +455,7 @@ int main(void)
 			}
 
 			// are we dead? 
-			if(player.lives == 0){
+			if(player.lives <= 0){
 				exit = 1;
 				won = FALSE;
 			}
