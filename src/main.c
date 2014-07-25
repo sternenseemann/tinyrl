@@ -3,6 +3,7 @@
 #include <stdlib.h> // for rand
 #include <time.h> // for time()
 #include <math.h> // for abs
+#include <string.h>
 
 #define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
@@ -34,6 +35,60 @@ struct liveform {
 	// what's its color?
 	uint16_t color;
 };
+
+void save_map(char *filename, int map[map_dimensions[0]][map_dimensions[1]]) {
+	FILE *fp = fopen(filename, "w");
+
+	fwrite(&map, sizeof map, 1, fp);
+
+	fclose(fp);
+}
+
+void save_player(char *filename, struct liveform player) {
+	FILE *fp = fopen(filename, "w");
+
+	fwrite(&player, sizeof player, 1, fp);
+
+	fclose(fp);
+}
+
+void save_stairs(char *filename, int stairs[2]) {
+	FILE *fp = fopen(filename, "w");
+
+	fwrite(&stairs, sizeof stairs, 1, fp);
+
+	fclose(fp);
+}
+
+void save_level(char *filename, int level) {
+	FILE *fp = fopen(filename, "w");
+
+	fwrite(&level, sizeof level, 1, fp);
+
+	fclose(fp);
+}
+
+void save_monsters(char *filename, struct liveform monsters[]) {
+	FILE *fp = fopen(filename, "w");
+
+	fwrite(&monsters, sizeof monsters, 1, fp);
+
+	fclose(fp);
+}
+
+void save_all(char *dir, int map[map_dimensions[0]][map_dimensions[1]], struct liveform player, int stairs[2], int level, struct liveform monsters[]) {
+	char *map_path = strcat(dir, "/map");
+	char *player_path = strcat(dir, "/player");
+	char *stairs_path = strcat(dir, "/stairs");
+	char *level_path = strcat(dir, "/level");
+	char *monsters_path = strcat(dir, "/monsters");
+
+	save_map(map_path, map);
+	save_player(player_path, player);
+	save_stairs(stairs_path, stairs);
+	save_level(level_path, level);
+	save_monsters(monsters_path, monsters);
+}
 
 void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 {
@@ -456,7 +511,7 @@ int main(void)
 
 			// are we dead? 
 			if(player.lives <= 0){
-				exit = 1;
+				exit = TRUE;
 				won = FALSE;
 			}
 		}
@@ -474,9 +529,8 @@ int main(void)
 
 	if(save)
 	{
-		// call save routine and so on
-		// is a TODO
 		printf("You saved at level %d of the dungeon\n", level);
+		save_all("./save", map, player, stairs, level, monsters);
 	}
 	else if(won)
 	{
