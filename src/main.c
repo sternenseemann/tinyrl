@@ -19,6 +19,8 @@ enum{
 
 #define PLAYER_LIVES 9
 
+#define SAVE_DIR "./save"
+
 int map_dimensions[2];
 
 // currently for player always a pointer is passed as a argument
@@ -37,10 +39,18 @@ struct liveform {
 };
 
 void save_map(char *filename, int map[map_dimensions[0]][map_dimensions[1]]) {
+	extern int map_dimensions[2];
 	FILE *fp = fopen(filename, "w");
+	int x = 0, y = 0;
+	char linebreak = '\n';
 
-	fwrite(&map, sizeof map, 1, fp);
-
+	for(y = 0; y < map_dimensions[1]; ++y) {
+		for(x = 0; x < map_dimensions[0]; ++x) {
+			fwrite(&map[x][y], sizeof(int), 1, fp);
+		}
+		fwrite(&linebreak, sizeof(char), 1, fp);
+	}
+	
 	fclose(fp);
 }
 
@@ -55,7 +65,7 @@ void save_player(char *filename, struct liveform player) {
 void save_stairs(char *filename, int stairs[2]) {
 	FILE *fp = fopen(filename, "w");
 
-	fwrite(&stairs, sizeof stairs, 1, fp);
+	fwrite(&stairs, sizeof(int [2]), 1, fp);
 
 	fclose(fp);
 }
@@ -68,26 +78,26 @@ void save_level(char *filename, int level) {
 	fclose(fp);
 }
 
-void save_monsters(char *filename, struct liveform monsters[]) {
+void save_monsters(char *filename, struct liveform monsters[], int monsterc) {
 	FILE *fp = fopen(filename, "w");
 
-	fwrite(&monsters, sizeof monsters, 1, fp);
+	fwrite(&monsters, sizeof(struct liveform) * monsterc, 1, fp);
 
 	fclose(fp);
 }
 
-void save_all(char *dir, int map[map_dimensions[0]][map_dimensions[1]], struct liveform player, int stairs[2], int level, struct liveform monsters[]) {
-	char *map_path = strcat(dir, "/map");
-	char *player_path = strcat(dir, "/player");
-	char *stairs_path = strcat(dir, "/stairs");
-	char *level_path = strcat(dir, "/level");
-	char *monsters_path = strcat(dir, "/monsters");
+void save_all(int map[map_dimensions[0]][map_dimensions[1]], struct liveform player, int stairs[2], int level, struct liveform monsters[], int monsterc) {
+	char map_path[] = SAVE_DIR "/map";
+	char player_path[] = SAVE_DIR "/player";
+	char stairs_path[] = SAVE_DIR "/stairs";
+	char level_path[] = SAVE_DIR "/level";
+	char monsters_path[] = SAVE_DIR "/monsters";
 
 	save_map(map_path, map);
 	save_player(player_path, player);
 	save_stairs(stairs_path, stairs);
 	save_level(level_path, level);
-	save_monsters(monsters_path, monsters);
+	save_monsters(monsters_path, monsters, monsterc);
 }
 
 void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
@@ -522,22 +532,25 @@ int main(void)
 		{
 			level++;
 		}
-
+		else
+		{
+			tb_shutdown();
+		}
+		
+		if(save)
+		{
+			printf("You saved at level %d of the dungeon\n", level);
+			save_all(map, player, stairs, level, monsters, monsterc);
+		}
+		else if(won)
+		{
+			printf("\\o/ You won at level %d of the dungeon\n", level);
+		}
+		else
+		{
+			printf("You died at level %d of the dungeon\n", level);
+		}
 	}while(!exit);
 
-	tb_shutdown();
-
-	if(save)
-	{
-		printf("You saved at level %d of the dungeon\n", level);
-		save_all("./save", map, player, stairs, level, monsters);
-	}
-	else if(won)
-	{
-		printf("\\o/ You won at level %d of the dungeon\n", level);
-	}else{
-		printf("You died at level %d of the dungeon\n", level);
-	}
-
-	return 0;
+	return EXIT_SUCCESS;
 }
