@@ -20,6 +20,13 @@ enum{
 #define PLAYER_LIVES 9
 
 #define SAVE_DIR "./save"
+#define MAP_SAVE SAVE_DIR "/map"
+#define PLAYER_SAVE SAVE_DIR "/player"
+#define STAIRS_SAVE SAVE_DIR "/stairs"
+#define LEVEL_SAVE SAVE_DIR "/level"
+#define MONSTERS_SAVE SAVE_DIR "/monsters"
+
+
 
 int map_dimensions[2];
 
@@ -87,17 +94,11 @@ void save_monsters(char *filename, struct liveform monsters[], int monsterc) {
 }
 
 void save_all(int map[map_dimensions[0]][map_dimensions[1]], struct liveform player, int stairs[2], int level, struct liveform monsters[], int monsterc) {
-	char map_path[] = SAVE_DIR "/map";
-	char player_path[] = SAVE_DIR "/player";
-	char stairs_path[] = SAVE_DIR "/stairs";
-	char level_path[] = SAVE_DIR "/level";
-	char monsters_path[] = SAVE_DIR "/monsters";
-
-	save_map(map_path, map);
-	save_player(player_path, player);
-	save_stairs(stairs_path, stairs);
-	save_level(level_path, level);
-	save_monsters(monsters_path, monsters, monsterc);
+	save_map(MAP_SAVE, map);
+	save_player(PLAYER_SAVE, player);
+	save_stairs(STAIRS_SAVE, stairs);
+	save_level(LEVEL_SAVE, level);
+	save_monsters(MONSTERS_SAVE, monsters, monsterc);
 }
 
 void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
