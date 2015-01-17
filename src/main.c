@@ -35,10 +35,23 @@ struct liveform {
 	uint16_t color;
 };
 
+struct World {
+	struct liveform player;
+
+	struct liveform *monsters;
+	unsigned int monsterc;
+
+	int map_dimensions[2];
+	unsigned int **map;
+
+	unsigned int stair[2];
+	unsigned int level;
+};
+
 void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 {
 	extern int map_dimensions[2];
-	
+
 	// intialize the map by filling it with spaces
 	int mapx;
 	int mapy;
@@ -73,7 +86,7 @@ void generate_map(int map[map_dimensions[0]][map_dimensions[1]])
 	int housec = 1 + ( rand() % 3);
 
 	while(housec > 0){
-		house_start[0] = rand() % (MAP_END_X - MAP_START_X - 6) + MAP_START_X; 
+		house_start[0] = rand() % (MAP_END_X - MAP_START_X - 6) + MAP_START_X;
 		house_start[1] = rand() % (MAP_END_Y - MAP_START_Y - 6) + MAP_START_Y;
 
 		int housex = house_start[0];
@@ -118,7 +131,7 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 	extern int map_dimensions[2];
 	// clear the screen
 	tb_clear();
-	
+
 	// walk trough the map...
 	int mapx;
 	int mapy;
@@ -130,12 +143,12 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 		}
 
 	}
-	
+
 	// draw the status bar
 	char level_str[100];
 	char lives_str[100];
 	sprintf(level_str, "Level: %d |", level);
-	sprintf(lives_str, "Lives: %d/%d", player->lives, PLAYER_LIVES); 
+	sprintf(lives_str, "Lives: %d/%d", player->lives, PLAYER_LIVES);
 
 	int stri;
 	int level_str_end;
@@ -143,7 +156,7 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 	{
 		tb_change_cell(0 + stri, 0, (uint32_t) level_str[stri], TB_WHITE, TB_DEFAULT);
 	}
-	
+
 	// start drawing from the end of the level string + 1 space
 	level_str_end = stri + 1;
 
@@ -160,7 +173,7 @@ void draw(int map[map_dimensions[0]][map_dimensions[1]], struct liveform *player
 	for(i = 0; i < monsterc; i++)
 	{
 		// the monster hasn't been put on the "graveyard" in (-1,-1)
-		if(monsters[i].x != - 1 && monsters[i].y != - 1) 
+		if(monsters[i].x != - 1 && monsters[i].y != - 1)
 		{
 			tb_change_cell(monsters[i].x,monsters[i].y, monsters[i].c, monsters[i].color, TB_DEFAULT);
 		}
@@ -176,7 +189,7 @@ int test_position(int x, int y, struct liveform *player, int map[map_dimensions[
 {
 	extern int map_dimensions[2];
 	// is the position in the terminal? Is there no '#'? Is there no player (needed for the better fighting mechanism)
-	if(x >= MAP_START_X && x < MAP_END_X && y >= MAP_START_Y && y < MAP_END_Y && map[x][y] != '#' && (player->x != x || player->y != y)){ 
+	if(x >= MAP_START_X && x < MAP_END_X && y >= MAP_START_Y && y < MAP_END_Y && map[x][y] != '#' && (player->x != x || player->y != y)) {
 		return 1;
 	}else{
 		return 0;
@@ -184,7 +197,7 @@ int test_position(int x, int y, struct liveform *player, int map[map_dimensions[
 }
 
 // returns - 1 if false; otherwise the index of the monster in monsters
-int test_for_monsters(int x, int y, int monsterc, struct liveform monsters[]) 
+int test_for_monsters(int x, int y, int monsterc, struct liveform monsters[])
 {
 	// walk trough the monsters and check if one is at the specific point
 	for(int i = 0; i < monsterc; i++)
@@ -219,14 +232,14 @@ void handle_move(int new_x, int new_y, struct liveform *player, int monsterc, st
 
 	// position is in the terminal and there's no monster -> move there
 	if(test_position(new_x, new_y, player, map) == 1 && monster_there == - 1)
-	{ 
+	{
 		player->x = new_x;
 		player->y = new_y;
 	}
 	// there's a monster -> fight
-	else if(test_position(new_x, new_y, player, map) == 1 && monster_there != - 1) 
+	else if(test_position(new_x, new_y, player, map) == 1 && monster_there != - 1)
 	{
-		fight(player, monster_there, monsters); 
+		fight(player, monster_there, monsters);
 	}
 }
 
@@ -268,14 +281,14 @@ void move_monsters(struct liveform *player, int monsterc, struct liveform monste
 		// is the monster on the "graveyard" at (-1,-1)
 		if(monsters[i].x == -1 || monsters[i].y == -1)
 		{
-		     continue;
+			continue;
 		}
 		// calculate x-distance and y-distance
 		int xdist = monsters[i].x - player->x;
 		int ydist = monsters[i].y - player->y;
 
 		// is there no way to go?
-		int nulldist = (ydist == 0) && (xdist == 0); 
+		int nulldist = (ydist == 0) && (xdist == 0);
 
 		int newx, newy;
 
@@ -284,7 +297,7 @@ void move_monsters(struct liveform *player, int monsterc, struct liveform monste
 			newy = monsters[i].y - 1;
 			if(test_position(monsters[i].x, newy, player, map) && test_for_monsters(monsters[i].x, newy, monsterc, monsters) == -1)
 			{
-				monsters[i].y = newy; 
+				monsters[i].y = newy;
 			}
 		}
 		else if(ydist < 0 && ydist < xdist && !nulldist)
@@ -292,7 +305,7 @@ void move_monsters(struct liveform *player, int monsterc, struct liveform monste
 			newy = monsters[i].y + 1;
 			if(test_position(monsters[i].x, newy, player, map) && test_for_monsters(monsters[i].x, newy, monsterc, monsters) == -1)
 			{
-				monsters[i].y = newy; 
+				monsters[i].y = newy;
 			}
 		}
 		else if(xdist > 0 && xdist >= ydist && !nulldist)
@@ -345,10 +358,10 @@ int main(void)
 	player.color = TB_WHITE;
 
 	// { x-pos of the stairs to the next level, y-pos of stairs }
-	int stairs[2]; 
+	int stairs[2];
 
 	// here will our events be stored
-	struct tb_event event; 
+	struct tb_event event;
 
 	// start termbox
 	tb_init();
@@ -417,7 +430,7 @@ int main(void)
 					{
 						case TB_KEY_CTRL_C:
 						case TB_KEY_CTRL_D:
-						case TB_KEY_ESC: 
+						case TB_KEY_ESC:
 							exit = TRUE;
 							save = TRUE;
 							won = FALSE;
@@ -454,7 +467,7 @@ int main(void)
 				break;
 			}
 
-			// are we dead? 
+			// are we dead?
 			if(player.lives <= 0){
 				exit = 1;
 				won = FALSE;
