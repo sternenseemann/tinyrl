@@ -5,30 +5,6 @@ tinyRL
 
 tinyRL is a tiny rogue-like written in C. 
 
-## Playing
-You will find yourself converted into a `@` in a black enviroment surrounded by evil monsters.  
-But there's hope! Run to the `>` and escape to reach the next level! But watch out, the monsters will chase you and will try to kill you.
-
-Somewhen you maybe will be able to finish your adventure.
-
-Control the `@` using `hjkl` or the arrow keys. If you get bored of this game (you won't, trust me), you can exit with `ESC` `^(C|D)` or `q`.
-
-	Level: 1 | Lives 9/9
-	@...........................
-	...........#####............
-	...o.......#...#............
-	...........#...#............
-	.....w.....#...#............
-	...........#...#...>........
-	...........##.##...^........
-	 A house! -^       └ Exit!
-
-### Monsters
-Currently there are two types:
-
-* cyan `w`: A warg – a wolf-like creature with one live
-* green `o`: A orc – once they were elves and they got two lives
-
 ## Building
 Should compile on most unixes, use a terminal emulator with UTF-8 support.
 
@@ -37,6 +13,19 @@ Should compile on most unixes, use a terminal emulator with UTF-8 support.
 	git submodule update --init
 	make
 	./bin/tinyrl # have fun!
+
+## Playing
+Like in most roguelikes you'll be a `@` in a monster-filled enviroment. The interface is a 2D top-view representation of this enviroment.
+
+On Top you'll see your current level and how many lives (or hitpoints) you have left.
+
+You can control yourself using (vim users – listen up!) `hjkl` or the arrow keys. You can quit using `q`.
+
+### Monsters
+Currently there are two types:
+
+* cyan `w`: A warg – a wolf-like creature with one live
+* green `o`: A orc – he's two lives
 
 ## TODO
 * implement an saving routine
