@@ -345,7 +345,10 @@ int main(void) {
 	struct tb_event event;
 
 	// start termbox
-	tb_init();
+	int err = tb_init();
+	assert(!err);
+
+	tb_select_output_mode(TB_OUTPUT_NORMAL);
 
 	// seed our shitty RNG
 	time_t seed = time(NULL);
@@ -441,11 +444,6 @@ int main(void) {
 		if(!exit) {
 			world->level++;
 		}
-		else
-		{
-			tb_shutdown();
-		}
-		
 	}while(!exit);
 
 	tb_shutdown();
