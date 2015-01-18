@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-I"termbox src" --debug -Wall -Wextra -Wformat-security -Werror -std=c99 -g -lm
-TERMBOXFILES=termbox/termbox.c termbox/utf8.c
+CFLAGS=--debug -g -Wall -Wextra -Wformat-security -Werror -std=gnu99 -lm
+TERMBOXFILES=termbox/src/termbox.c termbox/src/utf8.c
 
 all: src/main.c 
 	@mkdir -p bin
