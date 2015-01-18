@@ -34,6 +34,7 @@ Should compile on most unixes, use a terminal emulator with UTF-8 support.
 
 	git clone https://github.com/lukasepple/tinyrl.git
 	cd tinyrl
+	git submodule update --init
 	make
 	./bin/tinyrl # have fun!
 
