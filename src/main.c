@@ -259,6 +259,9 @@ int main(void) {
 	// intialize world struct
 	struct World *world = malloc(sizeof(struct World));
 	ensure(world != NULL, world);
+	// make sure all pointers are NULL
+	world->monsters = NULL;
+	world->map      = NULL;
 
 	// intialize the player struct
 	world->player.lives = PLAYER_LIVES;
@@ -291,6 +294,8 @@ int main(void) {
 		world->map_dimensions[0] = tb_width();
 		world->map_dimensions[1] = tb_height();
 
+		if(world->map != NULL)
+			free_map(world);
 		world->map = allocate_map(world);
 		generate_map(world);
 
@@ -302,6 +307,8 @@ int main(void) {
 		}while(!test_position(world->stairs[0], world->stairs[1], world));
 
 		// random count of monsters
+		if(world->monsters != NULL)
+			free(world->monsters);
 		world->monsterc = randint(0, MAX_MONSTERS);
 		world->monsters = malloc(world->monsterc * sizeof(struct liveform));
 		ensure(world->monsters != NULL, world);
