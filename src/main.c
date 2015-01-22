@@ -3,87 +3,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <assert.h>
+#include "config.h"     // special configuration using #defines
+#include "data.h"       // everything related to our special data structures
+#include "allocation.h" // everything related to allocation, freeing and exiting gracefully
 
 #define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
-
-enum{
-	FALSE = 0,
-	TRUE = 1,
-};
-
-#define MAP_START_X 0
-#define MAP_START_Y 1
-#define MAP_END_X world->map_dimensions[0]
-#define MAP_END_Y world->map_dimensions[1]
-
-#define PLAYER_LIVES 9
-
-// currently for player always a pointer is passed as a argument
-// since monsters is an array it behaves like a pointer and you can
-// modify its contents -> no need to pass it as a pointer
-struct liveform {
-	// position
-	int x;
-	int y;
-	// lives of the liveform
-	unsigned int lives;
-	// what does it look like?
-	unsigned int c;
-	// what's its color?
-	uint16_t color;
-};
-
-struct World {
-	struct liveform player;
-
-	struct liveform *monsters;
-	unsigned int monsterc;
-
-	unsigned int map_dimensions[2];
-	unsigned int **map;
-
-	unsigned int stairs[2];
-	unsigned int level;
-};
-
-/*
-unsigned int **allocate_map(struct World *world) {
-	unsigned int ** map = malloc(world->map_dimensions[0] * sizeof(unsigned int*));
-	unsigned int i;
-
-	assert(map != NULL);
-
-	map[0] = malloc(world->map_dimensions[1] * world->map_dimensions[0] * sizeof(unsigned int));
-	assert(map[0] != NULL);
-
-	for (i = 1; i < world->map_dimensions[0]; i++) {
-		map[i] = map[0] + (i * world->map_dimensions[1] * sizeof(unsigned int));
-		debug("Allocated Collum %d\n", i);
-	}
-	return map;
-} */
-
-unsigned int **allocate_map(struct World *world) {
-	unsigned int ** map = malloc(world->map_dimensions[0] * sizeof(unsigned int *));
-	unsigned int i;
-	for (i = 0; i < world->map_dimensions[0]; i++) {
-		map[i] = malloc(world->map_dimensions[1] * sizeof(unsigned int));
-	}
-
-	return map;
-}
-
-void free_map(struct World *world) {
-	assert(world->map != NULL);
-	unsigned int i;
-	for(i = 0; i < world->map_dimensions[0]; i++) {
-		assert(world->map[i] != NULL);
-		free(world->map[i]);
-	}
-
-	free(world->map);
-}
 
 int randint(int lower, int upper) {
 	return rand() % upper + lower;
@@ -331,10 +255,10 @@ void move_monsters(struct World *world) {
 
 int main(void) {
 	// loop control
-	int exit = FALSE;
+	int exit = 0;
 	// intialize world struct
 	struct World *world = malloc(sizeof(struct World));
-	assert(world != NULL);
+	ensure(world != NULL, world);
 
 	// intialize the player struct
 	world->player.lives = PLAYER_LIVES;
@@ -348,7 +272,7 @@ int main(void) {
 
 	// start termbox
 	int err = tb_init();
-	assert(!err);
+	ensure(!err, world);
 
 	// use normal output mode (maybe 256-Color soon?)
 	tb_select_output_mode(TB_OUTPUT_NORMAL);
@@ -378,9 +302,9 @@ int main(void) {
 		}while(!test_position(world->stairs[0], world->stairs[1], world));
 
 		// random count of monsters
-		world->monsterc = randint(0, 6);
+		world->monsterc = randint(0, MAX_MONSTERS);
 		world->monsters = malloc(world->monsterc * sizeof(struct liveform));
-		assert(world->monsters != NULL);
+		ensure(world->monsters != NULL, world);
 
 		unsigned int i;
 		for(i = 0; i < world->monsterc; i++) {
@@ -410,7 +334,7 @@ int main(void) {
 						case TB_KEY_CTRL_C:
 						case TB_KEY_CTRL_D:
 						case TB_KEY_ESC:
-							exit = TRUE;
+							exit = 1;
 							break;
 						default: // let the move-function check if we have to move or not
 							move(event.key, event.ch, world);
@@ -422,12 +346,12 @@ int main(void) {
 					// ugly but
 					// using tb_event and switch statements is a bit annoying
 					if(event.ch == 'q') {
-						exit = TRUE;
+						exit = 1;
 					}
 					break;
 				case TB_EVENT_RESIZE:
 					// resizing is basically cheating, so we quit :)
-					exit = TRUE;
+					exit = 1;
 					break;
 			}
 
