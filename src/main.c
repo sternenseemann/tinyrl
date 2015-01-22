@@ -340,6 +340,8 @@ int main(void) {
 	world->player.lives = PLAYER_LIVES;
 	world->player.c = '@';
 	world->player.color = TB_WHITE;
+	// level
+	world->level = 1;
 
 	// here will our events be stored
 	struct tb_event event;
@@ -348,12 +350,14 @@ int main(void) {
 	int err = tb_init();
 	assert(!err);
 
+	// use normal output mode (maybe 256-Color soon?)
 	tb_select_output_mode(TB_OUTPUT_NORMAL);
 
 	// seed our shitty RNG
 	time_t seed = time(NULL);
 	srand(seed);
 
+	// level generation loop
 	do {
 		// reset the player's location
 		world->player.x = MAP_START_X;
@@ -374,7 +378,7 @@ int main(void) {
 		}while(!test_position(world->stairs[0], world->stairs[1], world));
 
 		// random count of monsters
-		world->monsterc = randint(0, 10);
+		world->monsterc = randint(0, 6);
 		world->monsters = malloc(world->monsterc * sizeof(struct liveform));
 		assert(world->monsters != NULL);
 
@@ -395,6 +399,7 @@ int main(void) {
 			}
 		}
 
+		// game event loop
 		while(!exit) {
 			draw(world);
 			tb_poll_event(&event); // wait for an event
