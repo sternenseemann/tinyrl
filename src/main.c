@@ -286,10 +286,6 @@ int main(void) {
 	time_t seed = time(NULL);
 	srand(seed);
 
-	// init the size of the map
-	world->map_dimensions[0] = tb_width();
-	world->map_dimensions[1] = tb_height();
-
 	// level generation loop
 	do {
 		// reset loop control variables
@@ -304,6 +300,19 @@ int main(void) {
 		// a previous level free it
 		if(world->map != NULL)
 			free_map(world);
+
+		// init the size of the map
+		// use the data from the
+		// resize event because
+		// it's up to date
+		if(event.type == TB_EVENT_RESIZE) {
+			world->map_dimensions[0] = event.w;
+			world->map_dimensions[1] = event.h;
+		} else {
+			world->map_dimensions[0] = tb_width();
+			world->map_dimensions[1] = tb_height();
+		}
+
 		// allocate the map
 		// and generate it
 		world->map = allocate_map(world);
@@ -375,10 +384,6 @@ int main(void) {
 
 					break;
 				case TB_EVENT_RESIZE:
-					// use the sizes supplied by the event
-					world->map_dimensions[0] = event.w;
-					world->map_dimensions[1] = event.h;
-					debug("%d/%d", world->map_dimensions[0], world->map_dimensions[1]);
 					// set regeneration control variable
 					regenerate = 1;
 					break;
