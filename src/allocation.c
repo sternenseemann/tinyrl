@@ -2,6 +2,14 @@
 #include "data.h"
 #include "allocation.h"
 
+/* If condition is false, it causes a graceful exit,
+ * otherwise just does nothing */
+void ensure(int condition, struct World *world) {
+	if(!condition) {
+		exit_gracefully(EXIT_FAILURE, world);
+	}
+}
+
 void exit_gracefully(int code, struct World *world) {
 	if(world != NULL) {
 		free_map(world);
@@ -16,16 +24,12 @@ void exit_gracefully(int code, struct World *world) {
 	exit(code);
 }
 
-/* If condition is false, it causes a graceful exit,
- * otherwise just does nothing */
-void ensure(int condition, struct World *world) {
-	if(!condition) {
-		exit_gracefully(EXIT_FAILURE, world);
-	}
-}
 unsigned int **allocate_map(struct World *world) {
 	unsigned int ** map = malloc(world->map_dimensions[0] * sizeof(unsigned int *));
 	unsigned int i;
+
+	ensure(map != NULL, world);
+
 	for (i = 0; i < world->map_dimensions[0]; i++) {
 		map[i] = malloc(world->map_dimensions[1] * sizeof(unsigned int));
 		ensure(map[i] != NULL, world);

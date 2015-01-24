@@ -254,8 +254,10 @@ void move_monsters(struct World *world) {
 
 
 int main(void) {
-	// loop control
-	int exit = 0;
+	// wether to exit the loop
+	int exit       = 0;
+	// wether to regenerate the level
+	int regenerate = 0;
 	// intialize world struct
 	struct World *world = malloc(sizeof(struct World));
 	ensure(world != NULL, world);
@@ -265,10 +267,10 @@ int main(void) {
 
 	// intialize the player struct
 	world->player.lives = PLAYER_LIVES;
-	world->player.c = '@';
+	world->player.c     = '@';
 	world->player.color = TB_WHITE;
 	// level
-	world->level = 1;
+	world->level        = 1;
 
 	// here will our events be stored
 	struct tb_event event;
@@ -286,16 +288,24 @@ int main(void) {
 
 	// level generation loop
 	do {
+		// reset loop control variables
+		exit       = 0;
+		regenerate = 0;
+
 		// reset the player's location
 		world->player.x = MAP_START_X;
 		world->player.y = MAP_START_Y;
 
-		// init the size of the map. The map does NOT resize
+		// init the size of the map
 		world->map_dimensions[0] = tb_width();
 		world->map_dimensions[1] = tb_height();
 
+		// if the map was allocated in
+		// a previous level free it
 		if(world->map != NULL)
 			free_map(world);
+		// allocate the map
+		// and generate it
 		world->map = allocate_map(world);
 		generate_map(world);
 
@@ -306,26 +316,31 @@ int main(void) {
 			world->stairs[1] = randint(MAP_START_Y, (MAP_END_Y - MAP_START_Y));
 		}while(!test_position(world->stairs[0], world->stairs[1], world));
 
-		// random count of monsters
+		// if the monster array was
+		// already allocated previously
+		// free it
 		if(world->monsters != NULL)
 			free(world->monsters);
+		// random count of monsters
 		world->monsterc = randint(0, MAX_MONSTERS);
+		// allocate the array
 		world->monsters = malloc(world->monsterc * sizeof(struct liveform));
+
 		ensure(world->monsters != NULL, world);
 
 		unsigned int i;
 		for(i = 0; i < world->monsterc; i++) {
-			world->monsters[i].x = randint(MAP_START_X, (MAP_END_X - MAP_START_X));
-			world->monsters[i].y = randint(MAP_START_Y, (MAP_END_Y - MAP_START_Y));
+			world->monsters[i].x     = randint(MAP_START_X, (MAP_END_X - MAP_START_X));
+			world->monsters[i].y     = randint(MAP_START_Y, (MAP_END_Y - MAP_START_Y));
 			world->monsters[i].lives = randint(1, 2);
 
 			if(world->monsters[i].lives > 1) {
 				// it's an ork and more dangerous
-				world->monsters[i].c = 'o';
+				world->monsters[i].c     = 'o';
 				world->monsters[i].color = TB_GREEN;
 			} else {
 				// it's "only" a warg
-				world->monsters[i].c = 'w';
+				world->monsters[i].c     = 'w';
 				world->monsters[i].color = TB_CYAN;
 			}
 		}
@@ -350,15 +365,17 @@ int main(void) {
 							break;
 					}
 
-					// ugly but
-					// using tb_event and switch statements is a bit annoying
-					if(event.ch == 'q') {
-						exit = 1;
+					switch(event.ch) {
+						case 'q':
+							exit = 1;
+							break;
+						default:
+							break;
 					}
+
 					break;
 				case TB_EVENT_RESIZE:
-					// resizing is basically cheating, so we quit :)
-					exit = 1;
+					regenerate = 1;
 					break;
 			}
 
@@ -373,21 +390,24 @@ int main(void) {
 			if(world->player.lives <= 0) {
 				exit = 1;
 			}
+
+			if(regenerate) {
+				break;
+			}
 		}
 
 		// if we don't exit the game
+		// and don't regenerate
 		// increase the level counter
-		if(!exit) {
+		if(!exit && !regenerate) {
 			world->level++;
 		}
-	}while(!exit);
+	} while(!exit);
 
 	tb_shutdown();
 
 	// free all the stuff!
-	free_map(world);
-	free(world->monsters);
-	free(world);
+	exit_gracefully(EXIT_SUCCESS, world);
 
-	return EXIT_SUCCESS;
+	return 42; // we will never reach the answer
 }
