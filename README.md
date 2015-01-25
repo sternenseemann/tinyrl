@@ -35,6 +35,15 @@ Currently there are two types:
 * implement Inventory
 * ...
 
+## Changelog
+Newest Change always on top!
+
+* The level gets regenerated when the window gets resized
+* fixed several memory leaks and other bugs
+* proper allocation error handling
+* major refactoring, everything you now need to know is inside struct World
+* dropped the broken saving stuff
+
 ## Thanks to
 
 * [Lechindianer](https://github.com/Lechindianer) for fixing my Makefiles (although I have to fix the Makefiles again later)
