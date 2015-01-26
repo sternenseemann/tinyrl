@@ -3,7 +3,7 @@ tinyRL
 
 ![](./screenshot.png)
 
-tinyRL is a tiny rogue-like written in C. 
+tinyRL is a tiny rogue-like written in C.
 
 ## Building
 Should compile on most unixes, use a terminal emulator with UTF-8 support.
@@ -12,7 +12,7 @@ Should compile on most unixes, use a terminal emulator with UTF-8 support.
 	cd tinyrl
 	git submodule update --init
 	make
-	./bin/tinyrl # have fun!
+	./tinyrl # have fun!
 
 ## Playing
 Like in most roguelikes you'll be a `@` in a monster-filled enviroment. The interface is a 2D top-view representation of this enviroment.
@@ -21,6 +21,12 @@ On Top you'll see your current level and how many lives (or hitpoints) you have 
 
 You can control yourself using (vim users – listen up!) `hjkl` or the arrow keys. You can quit using `q`.
 
+As soon you get near a monster (or a monster gets near you) it will attack you if it's in a field that is vertically or horicontally the next to you. You can also attack them by moving towards them. A `w` is a warg which has one live, a `o` orc has got two lives.
+
+To enter the next level you need to reach `>` which is the staircase to the next level.
+
+At the current state of development there is no way of winning, you can just get as far as possible!
+
 ### Monsters
 Currently there are two types:
 
@@ -28,6 +34,7 @@ Currently there are two types:
 * green `o`: A orc – he's two lives
 
 ## TODO
+* count attacking as separate step.
 * implement an saving routine
 * think about a real concept and adjust the map generation
 * generate monsters and houses (or whatever) based on window size
