@@ -21,7 +21,7 @@ On Top you'll see your current level and how many lives (or hitpoints) you have 
 
 You can control yourself using (vim users – listen up!) `hjkl` or the arrow keys. You can quit using `q`.
 
-As soon you get near a monster (or a monster gets near you) it will attack you if it's in a field that is vertically or horicontally the next to you. You can also attack them by moving towards them. A `w` is a warg which has one live, a `o` orc has got two lives.
+As soon you get near a monster (or a monster gets near you) it will attack you if it's in a field that is vertically or horicontally the next to you. You can also attack them by moving towards them. A `w` is a warg which has one life, a `o` orc has got two lives.
 
 To enter the next level you need to reach `>` which is the staircase to the next level.
 
