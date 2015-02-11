@@ -13,6 +13,29 @@ int randint(int lower, int upper) {
 	return rand() % upper + lower;
 }
 
+unsigned int count_surrounding_walls(unsigned int x, unsigned int y, struct World *world) {
+	unsigned int count = 0;
+	int nx, ny;
+
+	for(nx = -1; nx <= 1; nx++) {
+		if((int) x + nx < MAP_START_X || x + nx >= MAP_END_X) {
+			count++;
+			continue;
+		}
+
+		for(ny = -1; ny <= 1; ny++) {
+			if((int) y + ny < MAP_START_Y || y + ny >= MAP_END_Y) {
+				count++;
+				continue;
+			}
+
+			if(world->map[x + nx][y + ny] == '#') {
+				count++;
+			}
+		}
+	}
+	return count;
+}
 void generate_map(struct World *world) {
 	// intialize the map by filling it with spaces
 	unsigned int mapx;
@@ -23,55 +46,37 @@ void generate_map(struct World *world) {
 			world->map[mapx][mapy] = ' ';
 		}
 	}
+
 	// generate map
 	// map is a array of arrays:
 	// map[map_dimensions[0]][map_dimensions[1]]
 	//
 	// fields are accesed like map[x][y] (which could be '.' or '#' etc.)
 
-	// generate a house
-	// looks like that:
-	// ┌-- The coordinates for this brick are randomly chosen as a base for generation.
-	// v
-	// #####
-	// #   #
-	// #   #
-	// #   #
-	// #   #
-	// ## ##
-	//
-	// the start brick needs min. 5 chars distance to the terminal border (bottom and right one)
-	// indexes start with 0 -> we need to subtract 6
-	int house_start[2];
-	// Generate min. 1 house
-	int housec = randint(1, 3);
-
-	while(housec > 0) {
-		house_start[0] = randint(MAP_START_X, (MAP_END_X - MAP_START_X - 6));
-		house_start[1] = randint(MAP_START_Y, (MAP_END_Y - MAP_START_Y - 6));
-
-		int housex = house_start[0];
-		int housey = house_start[1];
-
-		// add the vertical walls
-		for(housey = house_start[1]; housey < (house_start[1] + 5); housey++) {
-			// left wall
-			world->map[housex][housey] = '#';
-			// right wall
-			world->map[housex + 4][housey] = '#';
-		}
-		// add the horizontal walls
-		for(housex = house_start[0]; housex < (house_start[0] + 5); housex++) {
-			// top
-			world->map[housex][housey - 5] = '#';
-			// bottom, the if is for the empty cell to get in
-			if(housex != house_start[0] + 2) {
-				world->map[housex][housey] = '#';
+	// TODO: Document the generation process clearly
+	// The basic Idea is this one: http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
+	// randomly add walls
+	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
+		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
+			// wall propability = 45%
+			if(randint(0,100) < 45) {
+				world->map[mapx][mapy] = '#';
 			}
 		}
-		--housec;
 	}
 
+	// use our cellular automatons to make something reasonable out of it
+	//int cai;
+	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
+		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
+			unsigned int surrounding_walls = count_surrounding_walls(mapx, mapy, world);
+			if(surrounding_walls >= 5) {
+				world->map[mapx][mapy] = '#';
+			} else {
+				world->map[mapx][mapy] = '.';
+			}
+		}
+	}
 	// fill the rest with ground ('.')
 	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
 		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
@@ -269,6 +274,7 @@ int main(void) {
 	world->player.lives = PLAYER_LIVES;
 	world->player.c     = '@';
 	world->player.color = TB_WHITE;
+
 	// level
 	world->level        = 1;
 
@@ -292,9 +298,6 @@ int main(void) {
 		exit       = 0;
 		regenerate = 0;
 
-		// reset the player's location
-		world->player.x = MAP_START_X;
-		world->player.y = MAP_START_Y;
 
 		// if the map was allocated in
 		// a previous level free it
@@ -317,6 +320,11 @@ int main(void) {
 		// and generate it
 		world->map = allocate_map(world);
 		generate_map(world);
+
+
+		// place the player
+		world->player.x = randint(MAP_START_X, MAP_END_X);
+		world->player.y = randint(MAP_START_Y, MAP_END_Y);
 
 		// pick a random location for the exit
 		// that is accesible to the player
