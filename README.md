@@ -33,23 +33,25 @@ Currently there are two types:
 * cyan `w`: A warg – a wolf-like creature with one live
 * green `o`: A orc – he's two lives
 
-## TODO
-* count attacking as separate step.
-* implement an saving routine
-* think about a real concept and adjust the map generation
-* generate monsters and houses (or whatever) based on window size
-* implement Field of Vision (FOV)
-* implement Inventory
-* ...
-
 ## Changelog
 Newest Change always on top!
 
+* allow our hero to destruct walls that are in his way
+* Generate a nice looking cave level
 * The level gets regenerated when the window gets resized
 * fixed several memory leaks and other bugs
 * proper allocation error handling
 * major refactoring, everything you now need to know is inside struct World
 * dropped the broken saving stuff
+
+## TODO
+* count attacking as separate step.
+* implement an saving routine
+* ~~think about a real concept and adjust the map generation~~
+* generate monsters and houses (or whatever) based on window size
+* implement Field of Vision (FOV)
+* implement Inventory
+* ...
 
 ## Thanks to
 

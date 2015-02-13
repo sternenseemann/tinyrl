@@ -5,88 +5,11 @@
 #include <math.h>
 #include "config.h"     // special configuration using #defines
 #include "data.h"       // everything related to our special data structures
+#include "map.h"        // generation of the map
 #include "allocation.h" // everything related to allocation, freeing and exiting gracefully
+#include "util.h"       // utility functions
 
 #define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
-
-int randint(int lower, int upper) {
-	return rand() % upper + lower;
-}
-
-unsigned int count_surrounding_walls(unsigned int x, unsigned int y, struct World *world) {
-	unsigned int count = 0;
-	int nx, ny;
-
-	for(nx = -1; nx <= 1; nx++) {
-		if((int) x + nx < MAP_START_X || x + nx >= MAP_END_X) {
-			count++;
-			continue;
-		}
-
-		for(ny = -1; ny <= 1; ny++) {
-			if((int) y + ny < MAP_START_Y || y + ny >= MAP_END_Y) {
-				count++;
-				continue;
-			}
-
-			if(world->map[x + nx][y + ny] == '#') {
-				count++;
-			}
-		}
-	}
-	return count;
-}
-void generate_map(struct World *world) {
-	// intialize the map by filling it with spaces
-	unsigned int mapx;
-	unsigned int mapy;
-	for(mapx = 0; mapx < world->map_dimensions[0]; mapx++) {
-		for(mapy = 0; mapy < world->map_dimensions[1]; mapy++)
-		{
-			world->map[mapx][mapy] = ' ';
-		}
-	}
-
-	// generate map
-	// map is a array of arrays:
-	// map[map_dimensions[0]][map_dimensions[1]]
-	//
-	// fields are accesed like map[x][y] (which could be '.' or '#' etc.)
-
-	// TODO: Document the generation process clearly
-	// The basic Idea is this one: http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
-	// randomly add walls
-	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
-		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
-			// wall propability = 45%
-			if(randint(0,100) < 45) {
-				world->map[mapx][mapy] = '#';
-			}
-		}
-	}
-
-	// use our cellular automatons to make something reasonable out of it
-	//int cai;
-	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
-		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
-			unsigned int surrounding_walls = count_surrounding_walls(mapx, mapy, world);
-			if(surrounding_walls >= 5) {
-				world->map[mapx][mapy] = '#';
-			} else {
-				world->map[mapx][mapy] = '.';
-			}
-		}
-	}
-	// fill the rest with ground ('.')
-	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
-		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
-			if(world->map[mapx][mapy] != '#') {
-				world->map[mapx][mapy] = '.';
-			}
-		}
-
-	}
-}
 
 void draw(struct World *world) {
 	// clear the screen
@@ -141,9 +64,10 @@ void draw(struct World *world) {
 }
 
 int test_position(int x, int y, struct World *world) {
-	// is the position in the terminal? Is there no '#'? Is there no player (needed for the better fighting mechanism)
+	// is the position in the terminal? Is there no Wall? Is there no player (needed for the better fighting mechanism)
 	if(x >= MAP_START_X && x < (int) MAP_END_X && y >= MAP_START_Y && y < (int) MAP_END_Y &&
-		world->map[x][y] != '#' && (world->player.x != x || world->player.y != y)) {
+		world->map[x][y] != WALL && world->map[x][y] != PARTLY_DESTRUCTED_WALL &&
+		(world->player.x != x || world->player.y != y)) {
 		return 1;
 	} else {
 		return 0;
@@ -173,7 +97,20 @@ void fight(int monsteri, struct World *world) {
 	}
 }
 
-void handle_move(int new_x, int new_y, struct World *world) {
+void destruct_wall(unsigned int x, unsigned int y, struct World *world) {
+	if(abs(world->player.x - x) <= 1 && abs(world->player.y - y) <= 1) {
+		switch(world->map[x][y]) {
+			case WALL:
+				world->map[x][y] = PARTLY_DESTRUCTED_WALL;
+				break;
+			case PARTLY_DESTRUCTED_WALL:
+				world->map[x][y] = GROUND;
+				break;
+		}
+	}
+}
+
+void handle_move(unsigned int new_x, unsigned int new_y, struct World *world) {
 	int monster_there = test_for_monsters(new_x, new_y, world);
 
 	// position is in the terminal and there's no monster -> move there
@@ -184,8 +121,14 @@ void handle_move(int new_x, int new_y, struct World *world) {
 	// there's a monster -> fight
 	} else if(test_position(new_x, new_y, world) == 1 && monster_there != - 1) {
 		fight(monster_there, world);
+	} else if((int) new_x >= MAP_START_X && new_x < MAP_END_X &&
+				(int) new_y >= MAP_START_Y && new_y < MAP_END_Y &&
+				(world->map[new_x][new_y] == WALL ||
+				world->map[new_x][new_y] == PARTLY_DESTRUCTED_WALL)) {
+		destruct_wall(new_x, new_y, world);
 	}
 }
+
 
 void move(uint16_t key, uint32_t ch, struct World *world) {
 	int new_x = world->player.x;
@@ -273,7 +216,7 @@ int main(void) {
 	// intialize the player struct
 	world->player.lives = PLAYER_LIVES;
 	world->player.c     = '@';
-	world->player.color = TB_WHITE;
+	world->player.color = TB_MAGENTA;
 
 	// level
 	world->level        = 1;
@@ -323,8 +266,10 @@ int main(void) {
 
 
 		// place the player
-		world->player.x = randint(MAP_START_X, MAP_END_X);
-		world->player.y = randint(MAP_START_Y, MAP_END_Y);
+		do {
+			world->player.x = randint(MAP_START_X, MAP_END_X);
+			world->player.y = randint(MAP_START_Y, MAP_END_Y);
+		}while(world->map[world->player.x][world->player.y] == WALL);
 
 		// pick a random location for the exit
 		// that is accesible to the player

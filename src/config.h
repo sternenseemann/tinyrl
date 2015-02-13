@@ -6,3 +6,7 @@
 #define MAP_END_X world->map_dimensions[0]
 #define MAP_END_Y world->map_dimensions[1]
 
+// APPEARANCE
+#define GROUND '.'
+#define WALL   '#'
+#define PARTLY_DESTRUCTED_WALL '%'
