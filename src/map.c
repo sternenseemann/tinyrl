@@ -56,13 +56,17 @@ void generate_map(struct World *world) {
 
 	// use our cellular automatons to make something reasonable out of it
 	//int cai;
-	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
-		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
-			unsigned int surrounding_walls = count_surrounding_walls(mapx, mapy, world);
-			if(surrounding_walls >= 5) {
-				world->map[mapx][mapy] = WALL;
-			} else {
-				world->map[mapx][mapy] = GROUND;
+	int i, repeatn = randint(1, 3);
+
+	for(i = 0; i < repeatn; i++) {
+		for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
+			for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
+				unsigned int surrounding_walls = count_surrounding_walls(mapx, mapy, world);
+				if(surrounding_walls >= 5) {
+					world->map[mapx][mapy] = WALL;
+				} else {
+					world->map[mapx][mapy] = GROUND;
+				}
 			}
 		}
 	}
@@ -73,6 +77,5 @@ void generate_map(struct World *world) {
 				world->map[mapx][mapy] = GROUND;
 			}
 		}
-
 	}
 }
