@@ -70,12 +70,4 @@ void generate_map(struct World *world) {
 			}
 		}
 	}
-	// fill the rest with ground ('.')
-	for(mapx = MAP_START_X; mapx < MAP_END_X; mapx++) {
-		for(mapy = MAP_START_Y; mapy < MAP_END_Y; mapy++) {
-			if(world->map[mapx][mapy] != WALL) {
-				world->map[mapx][mapy] = GROUND;
-			}
-		}
-	}
 }
