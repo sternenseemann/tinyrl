@@ -1,4 +1,4 @@
-#include "../termbox/src/termbox.h"
+#include "termbox.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

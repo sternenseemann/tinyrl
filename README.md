@@ -6,13 +6,17 @@ tinyRL
 tinyRL is a tiny rogue-like written in C.
 
 ## Building
-Should compile on most unixes, use a terminal emulator with UTF-8 support.
 
-	git clone https://github.com/lukasepple/tinyrl.git
+Should compile on most unixes, use a terminal emulator with UTF-8 support. Install [termbox](https://github.com/nsf/termbox/tree/master) first, then do:
+
+	git clone https://github.com/sternenseemann/tinyrl.git
 	cd tinyrl
-	git submodule update --init
 	make
 	./tinyrl # have fun!
+
+	sudo make install # optionally install to /usr/local/bin
+
+On NixOS you can just run `nix-build` in this directory.
 
 ## Playing
 Like in most roguelikes you'll be a `@` in a monster-filled enviroment. The interface is a 2D top-view representation of this enviroment.
